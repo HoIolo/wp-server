@@ -17,6 +17,9 @@ export class User {
   @Column({ type: 'datetime' })
   sign_time: string;
 
+  @Column({ type: 'varchar', length: 25 })
+  salt: string;
+
   @Column({ type: 'int', default: 0 })
   role: number;
 }
