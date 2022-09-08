@@ -10,6 +10,7 @@ import {
   HttpException,
   HttpStatus,
   Session,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { LoginDTO } from './dto/login.dto';
@@ -21,6 +22,7 @@ import {
   REGISTER_SUCCESS,
   SYSTEM_ERROR,
 } from './constant';
+import { Profile } from './entity/profile.entity';
 
 @Controller()
 export class UserController {
@@ -37,6 +39,17 @@ export class UserController {
       rows,
       count,
     };
+  }
+
+  /**
+   * 获取当前登录用户信息
+   * @param req
+   * @returns
+   */
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/user')
+  getUser(@Req() req: Request & { user: Profile }) {
+    return req.user;
   }
 
   /**
