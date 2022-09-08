@@ -11,7 +11,7 @@ export class Profile {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   signature: string;
 
   @Column({

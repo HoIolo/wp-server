@@ -1,9 +1,11 @@
 import { QueryDTO } from './../common/dto/query.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { Profile } from './entity/profile.entity';
+import { RegisterDTO } from './dto/register.dto';
+import { encryptPassword, makeSalt } from 'src/utils/cryptogram';
 
 @Injectable()
 export class UserService {
@@ -11,6 +13,7 @@ export class UserService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Profile)
     private readonly profilesRepository: Repository<Profile>,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -53,5 +56,59 @@ export class UserService {
     return this.profilesRepository.findOneBy({
       uid,
     });
+  }
+
+  saveUser(registerDTO: RegisterDTO) {
+    const user = new User();
+    user.salt = makeSalt();
+    const saveUser = Object.assign(user, registerDTO) as User;
+    return this.usersRepository.save(saveUser);
+  }
+
+  saveProfile(uid: number, name: string) {
+    const profile = new Profile();
+    const saveProfile = Object.assign(profile, { uid, name });
+    return this.profilesRepository.save(saveProfile);
+  }
+
+  /**
+   * 创建用户
+   * @param registerDTO
+   * @returns
+   */
+  async createUser(registerDTO: RegisterDTO) {
+    const user = new User();
+    user.salt = makeSalt();
+    // 密码加密
+    registerDTO.password = encryptPassword(registerDTO.password, user.salt);
+    const mergeUser = Object.assign(user, registerDTO) as User;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const saveUser = await queryRunner.manager.save(mergeUser);
+
+      if (!saveUser) {
+        return null;
+      }
+
+      const profile = new Profile();
+      const mergeProfile = Object.assign(profile, {
+        uid: saveUser.id,
+        name: saveUser.account,
+      });
+
+      const saveProfile = await queryRunner.manager.save<Profile>(mergeProfile);
+
+      await queryRunner.commitTransaction();
+
+      return saveProfile;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
