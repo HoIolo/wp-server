@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Profile {
@@ -6,6 +6,7 @@ export class Profile {
   id: number;
 
   @Column({ type: 'bigint' })
+  @Index()
   uid: number;
 
   @Column()

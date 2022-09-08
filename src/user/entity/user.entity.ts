@@ -3,6 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity()
@@ -11,6 +12,7 @@ export class User {
   id: number;
 
   @Column({ type: 'varchar', length: 25 })
+  @Index()
   account: string;
 
   @Column({ type: 'varchar', length: 25 })
