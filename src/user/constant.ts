@@ -1,6 +1,7 @@
 export enum loginError {
   NOT_ACCOUNT = '该账号不存在',
   ACCOUNT_OR_PWD_ERROR = '账号或者密码不正确',
+  ACCOUNT_EXIST = '该账号已经存在',
 }
 
 export enum registerError {

@@ -1,11 +1,13 @@
 import { QueryDTO } from './../common/dto/query.dto';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { Profile } from './entity/profile.entity';
 import { RegisterDTO } from './dto/register.dto';
 import { encryptPassword, makeSalt } from 'src/utils/cryptogram';
+import { SYSTEM_ERROR } from './constant';
+import { code } from 'src/common/constant';
 
 @Injectable()
 export class UserService {
@@ -107,6 +109,13 @@ export class UserService {
       return saveProfile;
     } catch (e) {
       await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          message: SYSTEM_ERROR,
+          code: code.SYSTEM_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     } finally {
       await queryRunner.release();
     }

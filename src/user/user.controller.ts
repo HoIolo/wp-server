@@ -23,6 +23,7 @@ import {
   SYSTEM_ERROR,
 } from './constant';
 import { Profile } from './entity/profile.entity';
+import { code } from 'src/common/constant';
 
 @Controller()
 export class UserController {
@@ -49,7 +50,9 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/user')
   getUser(@Req() req: Request & { user: Profile }) {
-    return req.user;
+    return {
+      row: req.user,
+    };
   }
 
   /**
@@ -70,11 +73,17 @@ export class UserController {
         return await this.authService.login(profile);
       case 2:
         throw new HttpException(
-          loginError.ACCOUNT_OR_PWD_ERROR,
+          {
+            message: loginError.ACCOUNT_OR_PWD_ERROR,
+            code: code.INVALID_PARAMS,
+          },
           HttpStatus.BAD_REQUEST,
         );
       default:
-        throw new HttpException(loginError.NOT_ACCOUNT, HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          { message: loginError.NOT_ACCOUNT, code: code.INVALID_PARAMS },
+          HttpStatus.BAD_REQUEST,
+        );
     }
   }
 
@@ -92,18 +101,27 @@ export class UserController {
     const { emailCode } = session;
     // 校验验证码
     if (!emailCode || emailCode != registerDTO.email_code) {
-      throw new HttpException(registerError.EMAIL_CODE_ERROR, 400);
+      throw new HttpException(
+        { message: registerError.EMAIL_CODE_ERROR, code: code.INVALID_PARAMS },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const user = await this.userService.findOne(registerDTO.account);
     // 校验用户是否已经存在
     if (user) {
-      throw new HttpException(loginError.NOT_ACCOUNT, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        { message: loginError.ACCOUNT_EXIST, code: code.INVALID_PARAMS },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const saveUser = await this.userService.createUser(registerDTO);
     if (!saveUser)
-      throw new HttpException(SYSTEM_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        { message: SYSTEM_ERROR, code: code.SYSTEM_ERROR },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     return {
       message: REGISTER_SUCCESS,

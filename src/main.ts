@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as session from 'express-session';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
+import { TransformInterceptor } from './common/interceptor/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,8 @@ async function bootstrap() {
       enableDebugMessages: true,
     }),
   );
+  // 设置全局拦截器
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   await app.listen(3000);
 }
