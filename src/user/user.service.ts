@@ -8,6 +8,7 @@ import { RegisterDTO } from './dto/register.dto';
 import { encryptPassword, makeSalt } from 'src/utils/cryptogram';
 import { SYSTEM_ERROR } from './constant';
 import { code } from 'src/common/constant';
+import { ProfileDTO } from './dto/profile.dto';
 
 @Injectable()
 export class UserService {
@@ -119,5 +120,23 @@ export class UserService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  /**
+   * 更新用户资料
+   * @param id
+   * @param profileDTO
+   * @returns
+   */
+  updateProfile(id: number, profileDTO: ProfileDTO) {
+    if (!id || Object.values(profileDTO).length === 0) {
+      return null;
+    }
+    return this.profilesRepository
+      .createQueryBuilder()
+      .update()
+      .set(profileDTO)
+      .where('id = :id', { id })
+      .execute();
   }
 }

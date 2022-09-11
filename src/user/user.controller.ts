@@ -11,6 +11,9 @@ import {
   HttpStatus,
   Session,
   Req,
+  Param,
+  Patch,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { LoginDTO } from './dto/login.dto';
@@ -21,9 +24,11 @@ import {
   registerError,
   REGISTER_SUCCESS,
   SYSTEM_ERROR,
+  updateResponseMessage,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code } from 'src/common/constant';
+import { ProfileDTO } from './dto/profile.dto';
 
 @Controller()
 export class UserController {
@@ -125,6 +130,22 @@ export class UserController {
 
     return {
       message: REGISTER_SUCCESS,
+    };
+  }
+
+  @Patch('/user/profile/:id')
+  async updateUserProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() profileDTO: ProfileDTO,
+  ) {
+    const result = await this.userService.updateProfile(id, profileDTO);
+    if (result === null) {
+      return {
+        message: updateResponseMessage.UPDATE_ERROR,
+      };
+    }
+    return {
+      message: updateResponseMessage.UPDATE_SUUCCESS,
     };
   }
 }
