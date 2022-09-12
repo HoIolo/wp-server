@@ -10,7 +10,7 @@ export const dbFactory = (config: ConfigService) =>
     password: config.get('DB_PASSWORD'),
     database: config.get('DB_DATABASE'),
     keepConnectionAlive: true,
-    synchronize: true,
+    // synchronize: true,
     autoLoadEntities: true,
     timezone: '+00:00',
   } as TypeOrmModuleOptions);

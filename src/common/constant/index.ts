@@ -7,3 +7,19 @@ export enum code {
   // 系统出错
   SYSTEM_ERROR = 1050,
 }
+
+// 元数据
+export enum metadata {
+  ROLE = 'role',
+}
+
+export enum roles {
+  // 游客
+  VISITOR = 0,
+  // 登录用户
+  LOGGED = 1,
+  // 管理员
+  ADMIN = 2,
+  // 超级管理员
+  SUPER_Admin = 3,
+}

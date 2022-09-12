@@ -27,6 +27,6 @@ export class User {
   @Column({ type: 'varchar', length: 25 })
   salt: string;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', default: 1 })
   role: number;
 }

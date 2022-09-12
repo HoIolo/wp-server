@@ -27,11 +27,13 @@ import {
   updateResponseMessage,
 } from './constant';
 import { Profile } from './entity/profile.entity';
-import { code } from 'src/common/constant';
+import { code, roles } from 'src/common/constant';
 import { ProfileDTO } from './dto/profile.dto';
 import { Request } from 'express';
+import { Role } from 'src/common/decorator/role.decorator';
 
 @Controller()
+@Role(roles.VISITOR)
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -135,12 +137,14 @@ export class UserController {
   }
 
   /**
-   * 修改用户资料（需登录）
+   * 修改用户资料（需登录, 按照id修改）
+   * 管理员
    * @param id
    * @param profileDTO
    * @returns
    */
   @UseGuards(AuthGuard('jwt'))
+  @Role(roles.ADMIN)
   @Patch('/user/profile/:id')
   async updateUserProfileById(
     @Param('id', ParseIntPipe) id: number,

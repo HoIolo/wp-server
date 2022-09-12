@@ -139,4 +139,18 @@ export class UserService {
       .where('id = :id', { id })
       .execute();
   }
+
+  /**
+   * 匹配角色
+   * @param _role
+   * @param uid
+   * @returns
+   */
+  async matchRole(_role: number, uid: number) {
+    const user = await this.usersRepository.findOneBy({
+      id: uid,
+    });
+    const { role } = user;
+    return role >= _role;
+  }
 }
