@@ -29,6 +29,7 @@ import {
 import { Profile } from './entity/profile.entity';
 import { code } from 'src/common/constant';
 import { ProfileDTO } from './dto/profile.dto';
+import { Request } from 'express';
 
 @Controller()
 export class UserController {
@@ -133,12 +134,39 @@ export class UserController {
     };
   }
 
+  /**
+   * 修改用户资料（需登录）
+   * @param id
+   * @param profileDTO
+   * @returns
+   */
+  @UseGuards(AuthGuard('jwt'))
   @Patch('/user/profile/:id')
-  async updateUserProfile(
+  async updateUserProfileById(
     @Param('id', ParseIntPipe) id: number,
     @Body() profileDTO: ProfileDTO,
   ) {
     const result = await this.userService.updateProfile(id, profileDTO);
+    if (result === null) {
+      return {
+        message: updateResponseMessage.UPDATE_ERROR,
+      };
+    }
+    return {
+      message: updateResponseMessage.UPDATE_SUUCCESS,
+    };
+  }
+
+  /**
+   * 修改用户资料（需登录）
+   * @param profileDTO
+   * @returns
+   */
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/user/profile')
+  async updateUserProfile(@Body() profileDTO: ProfileDTO, @Req() req: Request) {
+    const user = req.user as Profile;
+    const result = await this.userService.updateProfile(user.id, profileDTO);
     if (result === null) {
       return {
         message: updateResponseMessage.UPDATE_ERROR,

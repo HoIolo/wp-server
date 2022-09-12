@@ -21,7 +21,7 @@ export const REGISTER_SUCCESS = '注册成功';
 export const userProfileRules = {
   username: {
     // 最小长度为 3
-    MIN_LENGTH: 3,
+    MIN_LENGTH: 2,
     // 最大长度为 5
     MAX_LENGTH: 5,
   },
