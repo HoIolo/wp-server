@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 import { AppService } from './app.service';
+import { Role } from './common/decorator/role.decorator';
 
 class EmailDTO {
   @IsNotEmpty()
@@ -16,6 +17,7 @@ class EmailDTO {
   email: string;
 }
 
+@Role(0)
 @Controller()
 export class AppController {
   constructor(

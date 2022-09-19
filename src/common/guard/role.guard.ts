@@ -23,10 +23,15 @@ export class RoleGuard implements CanActivate {
     const role =
       this.reflector.get<number>(metadata.ROLE, context.getHandler()) ||
       this.reflector.get<number>(metadata.ROLE, context.getClass());
+
     if (role === undefined) {
       return false;
     }
     let token = request.headers['authorization'];
+    // 游客权限为0, 不需要登录
+    if (role === 0 && !token) {
+      return true;
+    }
     if (token) {
       token = token.split(' ')[1];
     }
