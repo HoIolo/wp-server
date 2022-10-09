@@ -10,6 +10,7 @@ import { mailerFactory } from './config/mailer.config';
 import { dbFactory } from './config/db.config';
 import { RoleGuard } from './common/guard/role.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { ArticleModule } from './article/article.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     UserModule,
     AuthModule,
+    ArticleModule,
   ],
   controllers: [AppController],
   providers: [
