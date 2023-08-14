@@ -1,5 +1,5 @@
 import { UserService } from './user.service';
-import { QueryDTO } from './../common/dto/query.dto';
+import { QueryDTO } from './../../common/dto/query.dto';
 import {
   Body,
   Controller,
@@ -15,7 +15,7 @@ import {
   Patch,
   ParseIntPipe,
 } from '@nestjs/common';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from 'src/modules/auth/auth.service';
 import { LoginDTO } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RegisterDTO } from './dto/register.dto';
@@ -27,11 +27,14 @@ import {
   updateResponseMessage,
 } from './constant';
 import { Profile } from './entity/profile.entity';
-import { code, roles } from 'src/common/constant';
+import { code, roles } from 'src/constant';
 import { ProfileDTO } from './dto/profile.dto';
 import { Request } from 'express';
 import { Role } from 'src/common/decorator/role.decorator';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { User } from './entity/user.entity';
 
+@ApiTags('user')
 @Controller()
 @Role(roles.VISITOR)
 export class UserController {
@@ -69,6 +72,10 @@ export class UserController {
    * @returns
    */
   @Post('/login')
+  @ApiResponse({
+    description: '用户登陆接口',
+    type: User,
+  })
   async login(@Body() loginDTO: LoginDTO) {
     const authResult = await this.authService.validateUser(
       loginDTO.account,

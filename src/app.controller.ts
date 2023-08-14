@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { MailerService } from '@nestjs-modules/mailer';
 import {
   Body,
@@ -10,20 +11,23 @@ import {
 import { IsEmail, IsNotEmpty } from 'class-validator';
 import { AppService } from './app.service';
 import { Role } from './common/decorator/role.decorator';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 
 class EmailDTO {
   @IsNotEmpty()
   @IsEmail()
+  @ApiProperty()
   email: string;
 }
 
+@ApiTags('')
 @Role(0)
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
 
   @Get()
   getHello(): string {

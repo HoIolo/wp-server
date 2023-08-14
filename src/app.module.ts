@@ -3,14 +3,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { mailerFactory } from './config/mailer.config';
 import { dbFactory } from './config/db.config';
 import { RoleGuard } from './common/guard/role.guard';
 import { APP_GUARD } from '@nestjs/core';
-import { ArticleModule } from './article/article.module';
+import { ArticleModule } from './modules/article/article.module';
 
 @Module({
   imports: [

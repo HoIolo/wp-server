@@ -1,4 +1,4 @@
-import { QueryDTO } from './../common/dto/query.dto';
+import { QueryDTO } from './../../common/dto/query.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -7,7 +7,7 @@ import { Profile } from './entity/profile.entity';
 import { RegisterDTO } from './dto/register.dto';
 import { encryptPassword, makeSalt } from 'src/utils/cryptogram';
 import { SYSTEM_ERROR } from './constant';
-import { code } from 'src/common/constant';
+import { code } from 'src/constant';
 import { ProfileDTO } from './dto/profile.dto';
 
 @Injectable()

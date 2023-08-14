@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { code } from '../constant';
+import { code } from '../../constant';
 
 @Injectable()
 export class TransformInterceptor implements NestInterceptor {

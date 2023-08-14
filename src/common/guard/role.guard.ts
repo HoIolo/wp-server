@@ -3,9 +3,9 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
-import { Profile } from 'src/user/entity/profile.entity';
-import { UserService } from 'src/user/user.service';
-import { metadata } from '../constant';
+import { Profile } from 'src/modules/user/entity/profile.entity';
+import { UserService } from 'src/modules/user/user.service';
+import { metadata } from '../../constant';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
