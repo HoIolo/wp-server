@@ -1,5 +1,5 @@
 import { UserService } from './user.service';
-import { QueryDTO } from './../../common/dto/query.dto';
+import { QueryDTO } from './dto/query.dto';
 import {
   Body,
   Controller,

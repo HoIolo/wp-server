@@ -1,4 +1,4 @@
-import { QueryDTO } from './../../common/dto/query.dto';
+import { QueryDTO } from './dto/query.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -17,7 +17,7 @@ export class UserService {
     @InjectRepository(Profile)
     private readonly profilesRepository: Repository<Profile>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   /**
    * 查询用户，支持分页
