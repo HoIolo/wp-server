@@ -17,7 +17,7 @@ export class UserService {
     @InjectRepository(Profile)
     private readonly profilesRepository: Repository<Profile>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   /**
    * 查询用户，支持分页
@@ -28,11 +28,12 @@ export class UserService {
     let { page = 1, offset = 10 } = queryDTO;
     if (isNaN(Number(page))) page = Number(page);
     if (isNaN(Number(offset))) offset = Number(offset);
-    const skip = ((page as number) - (offset as number)) * Number(offset);
+    const skip = ((page as number) - 1) * Number(offset);
     return this.usersRepository
-      .createQueryBuilder()
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
       .skip(skip)
-      .limit(offset as number)
+      .take(offset as number)
       .getManyAndCount();
   }
 

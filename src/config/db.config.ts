@@ -15,4 +15,5 @@ export const dbFactory = (config: ConfigService) =>
     autoLoadEntities: true,
     timezone: '+00:00',
     logger: new DatabaseLogger(),
+    synchronize: true,
   } as TypeOrmModuleOptions);

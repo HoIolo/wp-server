@@ -4,7 +4,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   Index,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Profile } from './profile.entity';
 
 @Entity()
 export class User {
@@ -29,4 +32,8 @@ export class User {
 
   @Column({ type: 'int', default: 1 })
   role: number;
+
+  @OneToOne(() => Profile)
+  @JoinColumn()
+  profile: Profile;
 }
