@@ -7,9 +7,12 @@ import { TransformInterceptor } from './common/interceptor/transform.interceptor
 
 // api文档插件
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import getLogLevels from './utils/getLogLevels';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: getLogLevels(process.env.NODE_ENV === 'production'),
+  });
   app.enableCors({
     origin: ['http://127.0.0.1:4000'],
     methods: ['GET', 'POST'],

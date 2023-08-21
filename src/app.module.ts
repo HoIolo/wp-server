@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -11,6 +11,7 @@ import { dbFactory } from './config/db.config';
 import { RoleGuard } from './common/guard/role.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { ArticleModule } from './modules/article/article.module';
+import LogsMiddleware from './common/middleware/logs.middleware';
 
 @Module({
   imports: [
@@ -40,4 +41,8 @@ import { ArticleModule } from './modules/article/article.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LogsMiddleware).forRoutes('*');
+  }
+}

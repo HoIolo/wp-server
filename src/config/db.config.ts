@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import DatabaseLogger from 'src/common/logger/database.logger';
 
 export const dbFactory = (config: ConfigService) =>
   ({
@@ -13,4 +14,5 @@ export const dbFactory = (config: ConfigService) =>
     // synchronize: true,
     autoLoadEntities: true,
     timezone: '+00:00',
+    logger: new DatabaseLogger(),
   } as TypeOrmModuleOptions);
