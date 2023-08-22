@@ -31,7 +31,13 @@ export class UserService {
     const skip = ((page as number) - 1) * Number(offset);
     return this.usersRepository
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
+      .select(['user.id', 'user.account', 'user.email', 'user.role'])
+      .leftJoinAndMapOne(
+        'user.profile',
+        Profile,
+        'profile',
+        'profile.user_id = user.id',
+      )
       .skip(skip)
       .take(offset as number)
       .getManyAndCount();
@@ -56,9 +62,9 @@ export class UserService {
    * @param uid
    * @returns
    */
-  findProfileByUid(uid: number) {
+  findProfileByUid(user_id: number) {
     return this.profilesRepository.findOneBy({
-      uid,
+      user_id,
     });
   }
 
@@ -100,7 +106,7 @@ export class UserService {
 
       const profile = new Profile();
       const mergeProfile = Object.assign(profile, {
-        uid: saveUser.id,
+        user_id: saveUser.id,
         name: saveUser.account,
       });
 

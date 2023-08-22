@@ -44,7 +44,7 @@ export class AuthService {
 
   async login(profile: Profile) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { uid, ...payload } = profile;
+    const { user_id, ...payload } = profile;
     return {
       access_token: this.jwtService.sign(payload),
     };

@@ -1,19 +1,9 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  Index,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, CreateDateColumn, Index, OneToOne } from 'typeorm';
 import { Profile } from './profile.entity';
+import { BaseEntity } from 'src/common/entity/base.entity';
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id: number;
-
+export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 25 })
   @Index()
   account: string;
@@ -33,7 +23,6 @@ export class User {
   @Column({ type: 'int', default: 1 })
   role: number;
 
-  @OneToOne(() => Profile)
-  @JoinColumn()
+  @OneToOne(() => Profile, (profile) => profile.user_id)
   profile: Profile;
 }

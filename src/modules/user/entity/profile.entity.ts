@@ -1,13 +1,12 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
+import { User } from './user.entity';
+import { BaseEntity } from 'src/common/entity/base.entity';
 
 @Entity()
-export class Profile {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id: number;
-
-  @Column({ type: 'bigint' })
+export class Profile extends BaseEntity {
   @Index()
-  uid: number;
+  @Column({ nullable: true, type: 'bigint' })
+  user_id: number;
 
   @Column()
   name: string;

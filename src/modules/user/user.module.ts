@@ -15,4 +15,4 @@ import { Profile } from './entity/profile.entity';
   controllers: [UserController],
   exports: [UserService],
 })
-export class UserModule { }
+export class UserModule {}
