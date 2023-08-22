@@ -8,6 +8,7 @@ import { TransformInterceptor } from './common/interceptor/transform.interceptor
 // api文档插件
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import getLogLevels from './utils/getLogLevels';
+import { AllExceptionFilter } from './common/filter/all-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -30,7 +31,7 @@ async function bootstrap() {
   // 设置全局访问前缀
   app.setGlobalPrefix('/api/v1');
   // 设置全局http异常过滤器
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AllExceptionFilter(), new HttpExceptionFilter());
   // 设置全局参数验证管道
   app.useGlobalPipes(
     new ValidationPipe({
