@@ -1,10 +1,8 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity } from 'src/common/entity/base.entity';
+import { Column, Entity, Index } from 'typeorm';
 
 @Entity()
-export class Article {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Article extends BaseEntity {
   @Column({ type: 'bigint' })
   @Index()
   author_id: number;
