@@ -1,11 +1,17 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { Profile } from 'src/modules/user/entity/profile.entity';
 import { UserService } from 'src/modules/user/user.service';
-import { metadata } from '../../constant';
+import { metadata, roles } from '../../constant';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -29,14 +35,22 @@ export class RoleGuard implements CanActivate {
     }
     let token = request.headers['authorization'];
     // 游客权限为0, 不需要登录
-    if (role === 0 && !token) {
+    if (role === roles.VISITOR && !token) {
       return true;
+    } else if (token === undefined || !token) {
+      // 需要更高的权限，但是没有登陆
+      return false;
     }
     if (token) {
       token = token.split(' ')[1];
     }
-    const userProfile =
-      (request.user as Profile) || (this.jwtService.verify(token) as Profile);
+    let userProfile: Profile = null;
+    try {
+      userProfile =
+        (request.user as Profile) || (this.jwtService.verify(token) as Profile);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.UNAUTHORIZED);
+    }
 
     // 未登录，游客，放行
     if (!userProfile) return true;
