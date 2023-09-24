@@ -22,12 +22,12 @@ export class Article extends BaseEntity {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   watch_num: number;
 
-  @Column('int')
+  @Column({ type: 'int', default: 0 })
   comment_num: number;
 
-  @Column('datetime')
+  @Column({ type: 'datetime' })
   publish_date: string;
 }
