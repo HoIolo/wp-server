@@ -30,6 +30,15 @@ export class ArticleService {
   }
 
   /**
+   * 根据文章ID查询文章
+   * @param article_id
+   * @returns
+   */
+  async findById(article_id: number) {
+    return this.articleRepository.findOneBy({ id: article_id });
+  }
+
+  /**
    * 新增文章
    * @param createArticleDto
    * @returns

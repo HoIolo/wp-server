@@ -17,3 +17,8 @@ export const CREATE_ARTICLE_RESPONSE = {
   FAIL: '新增失败，系统繁忙，请稍后再试！',
   PARAMS_ERROR: '参数错误，请重新提交！',
 };
+
+// 查询文章响应提示
+export const FIND_ARTICLE_RESPONSE = {
+  PARAMS_ERROR: '参数错误，不存在这篇文章！',
+};
