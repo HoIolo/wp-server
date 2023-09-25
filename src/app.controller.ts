@@ -27,7 +27,7 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly mailerService: MailerService,
-  ) { }
+  ) {}
 
   @Get()
   getHello(): string {
@@ -44,7 +44,7 @@ export class AppController {
     const code = await this.appService.sendEmail(email);
 
     if (code) {
-      session.emailCode = code;
+      session[email] = code;
       return {
         message: '发送成功',
       };

@@ -113,7 +113,7 @@ export class UserController {
     @Body() registerDTO: RegisterDTO,
     @Session() session: Record<string, any>,
   ) {
-    const { emailCode } = session;
+    const emailCode = session[registerDTO.email];
     // 校验验证码
     if (!emailCode || emailCode != registerDTO.email_code) {
       throw new HttpException(
@@ -137,7 +137,8 @@ export class UserController {
         { message: SYSTEM_ERROR, code: code.SYSTEM_ERROR },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-
+    // 注册成功，删除验证码session
+    session[registerDTO.email] = null;
     return {
       message: REGISTER_SUCCESS,
     };
