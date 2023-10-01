@@ -12,6 +12,7 @@ import { RoleGuard } from './common/guard/role.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { ArticleModule } from './modules/article/article.module';
 import LogsMiddleware from './common/middleware/logs.middleware';
+import { OssModule } from './modules/oss/oss.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import LogsMiddleware from './common/middleware/logs.middleware';
     UserModule,
     AuthModule,
     ArticleModule,
+    OssModule,
   ],
   controllers: [AppController],
   providers: [
