@@ -59,7 +59,7 @@ export class ArticleController {
       );
     }
     return {
-      article,
+      row: article,
     };
   }
 
