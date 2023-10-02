@@ -4,14 +4,17 @@ import { ValidationPipe } from '@nestjs/common';
 import * as session from 'express-session';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { TransformInterceptor } from './common/interceptor/transform.interceptor';
+import helmet from 'helmet';
+import * as csurf from 'csurf';
 
 // api文档插件
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import getLogLevels from './utils/getLogLevels';
 import { AllExceptionFilter } from './common/filter/all-exception.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
   app.enableCors({
@@ -19,12 +22,13 @@ async function bootstrap() {
     methods: '*',
     credentials: true,
   });
-
+  app.set('trust proxy', 1);
   app.use(
     session({
       secret: 'my-secret',
       resave: false,
-      saveUninitialized: false,
+      rolling: true,
+      saveUninitialized: true,
       cookie: {
         //	允许跨站和同站请求中均发送cookie
         sameSite: 'none',
@@ -33,6 +37,9 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.use(csurf());
+  app.use(helmet());
   // 设置全局访问前缀
   app.setGlobalPrefix('/api/v1');
   // 设置全局http异常过滤器
