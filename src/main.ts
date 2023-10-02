@@ -28,8 +28,7 @@ async function bootstrap() {
       cookie: {
         //	允许跨站和同站请求中均发送cookie
         sameSite: 'none',
-        //	“auto”设置自动和确定的连接的安全性相匹配
-        secure: 'auto',
+        secure: true,
         maxAge: 1000 * 60 * 30,
       },
     }),
