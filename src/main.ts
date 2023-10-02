@@ -15,7 +15,7 @@ async function bootstrap() {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
   app.enableCors({
-    origin: ['http://127.0.0.1:5000'],
+    origin: [process.env.ALLOW_ORIGIN],
     methods: '*',
     credentials: true,
   });
