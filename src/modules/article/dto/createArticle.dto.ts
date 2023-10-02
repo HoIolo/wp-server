@@ -9,7 +9,6 @@ import {
 import { createArticleRules } from '../constant';
 
 export class CreateArticleDTO {
-  @IsString()
   @IsNotEmpty()
   @ApiProperty()
   author_id: string | number;
