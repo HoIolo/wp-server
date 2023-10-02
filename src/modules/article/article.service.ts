@@ -26,6 +26,7 @@ export class ArticleService {
       .createQueryBuilder()
       .skip(skip)
       .take(offset as number)
+      .orderBy('id', 'DESC')
       .getManyAndCount();
   }
 
