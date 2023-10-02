@@ -5,7 +5,6 @@ import * as session from 'express-session';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { TransformInterceptor } from './common/interceptor/transform.interceptor';
 import helmet from 'helmet';
-import * as csurf from 'csurf';
 
 // api文档插件
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -38,7 +37,6 @@ async function bootstrap() {
     }),
   );
 
-  app.use(csurf());
   app.use(helmet());
   // 设置全局访问前缀
   app.setGlobalPrefix('/api/v1');
