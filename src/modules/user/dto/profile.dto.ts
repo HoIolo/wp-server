@@ -31,7 +31,6 @@ export class ProfileDTO {
   avatar: string;
 
   @IsOptional()
-  @IsIn(Object.values(userProfileRules.usersex))
   @ApiProperty()
   sex: usersex;
 }

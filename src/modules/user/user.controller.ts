@@ -25,6 +25,7 @@ import {
   REGISTER_SUCCESS,
   SYSTEM_ERROR,
   updateResponseMessage,
+  USER_NOT_LOGIN,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code, roles } from 'src/constant';
@@ -60,9 +61,18 @@ export class UserController {
    */
   @UseGuards(AuthGuard('jwt'))
   @Get('/user')
-  getUser(@Req() req: Request & { user: Profile }) {
+  async getUser(@Req() req: Request & { user: Profile }) {
+    if (!req.user) {
+      throw new HttpException(
+        {
+          message: USER_NOT_LOGIN,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    const userProfile = await this.userService.findProfileByUid(req.user.id);
     return {
-      row: req.user,
+      row: userProfile,
     };
   }
 
@@ -175,15 +185,22 @@ export class UserController {
    * @returns
    */
   @UseGuards(AuthGuard('jwt'))
+  @Role(roles.LOGGED)
   @Patch('/user/profile')
   async updateUserProfile(@Body() profileDTO: ProfileDTO, @Req() req: Request) {
     const user = req.user as Profile;
     const result = await this.userService.updateProfile(user.id, profileDTO);
+
     if (result === null) {
-      return {
-        message: updateResponseMessage.UPDATE_ERROR,
-      };
+      throw new HttpException(
+        {
+          message: updateResponseMessage.UPDATE_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
+
     return {
       message: updateResponseMessage.UPDATE_SUUCCESS,
     };

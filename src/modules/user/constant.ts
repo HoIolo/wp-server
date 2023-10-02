@@ -13,6 +13,8 @@ export enum updateResponseMessage {
   UPDATE_SUUCCESS = '修改成功！',
 }
 
+export const USER_NOT_LOGIN = '用户未登录！';
+
 export const SYSTEM_ERROR = '系统繁忙，请稍后再试';
 
 export const REGISTER_SUCCESS = '注册成功';
