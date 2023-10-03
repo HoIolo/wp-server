@@ -18,7 +18,7 @@ async function bootstrap() {
   });
   app.enableCors({
     origin: [process.env.ALLOW_ORIGIN],
-    methods: '*',
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
   app.set('trust proxy', 1);
