@@ -4,6 +4,8 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
   Query,
 } from '@nestjs/common';
@@ -44,6 +46,22 @@ export class CommentController {
     return {
       row: result,
       message: PUBLISH_COMMENT_RESPONSE.PUBLISH_SUCCESS,
+    };
+  }
+
+  @Get('/comment/:articleId')
+  async getCommentByArticle(
+    @Param('articleId', ParseIntPipe) articleId: number,
+    @Query() pageDto: PageDTO,
+  ) {
+    const [rows, count] = await this.commentService.findByArticleId(
+      articleId,
+      pageDto,
+    );
+
+    return {
+      rows,
+      count,
     };
   }
 }

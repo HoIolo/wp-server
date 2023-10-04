@@ -37,6 +37,23 @@ export class CommentService {
   }
 
   /**
+   * 根据文章id查询
+   * @param articleId
+   * @param pageDto
+   * @returns
+   */
+  async findByArticleId(articleId: number, pageDto: PageDTO) {
+    const { skip, offset } = handlePage(pageDto);
+    return await this.commentRepository
+      .createQueryBuilder('comment')
+      .skip(skip)
+      .take(offset as number)
+      .where('article_id', [articleId])
+      .leftJoinAndSelect('comment.replys', 'replys')
+      .getManyAndCount();
+  }
+
+  /**
    * 创建评论
    * @param publishCommentDto
    * @returns

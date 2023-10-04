@@ -21,7 +21,7 @@ export class Comment extends BaseEntity {
   @ManyToOne(() => Article, { nullable: false })
   @JoinColumn({ name: 'article_id' })
   @Index()
-  article_id: Article;
+  article: Article;
 
   @Column({ type: 'varchar', length: 255 })
   content: string;
