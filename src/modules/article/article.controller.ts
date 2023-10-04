@@ -42,6 +42,19 @@ export class ArticleController {
   }
 
   /**
+   * 查询文章时间轴
+   * @returns
+   */
+  @Get('/article/timeline')
+  async getArticleTimeline() {
+    const [rows, count] = await this.articleService.findTimeLine();
+    return {
+      rows,
+      count,
+    };
+  }
+
+  /**
    * 根据id获取文章信息
    * @param id
    * @returns

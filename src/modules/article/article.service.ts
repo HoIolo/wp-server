@@ -68,4 +68,49 @@ export class ArticleService {
       return null;
     }
   }
+
+  /**
+   * 获取时间轴
+   * @param pageDto
+   */
+  async findTimeLine() {
+    const data = await this.articleRepository
+      .createQueryBuilder('article')
+      .select([
+        'YEAR(article.publish_date) as year',
+        'MONTH(article.publish_date) as month',
+        'COUNT(*) as count',
+      ])
+      .groupBy('year, month')
+      .orderBy('year', 'DESC')
+      .getRawMany();
+
+    if (data === null || data === undefined) {
+      return [null, 0];
+    }
+
+    // 创建一个映射对象以存储按年份分组的数据
+    const groupedData = {};
+
+    // 遍历原始数据并按年份分组
+    data.forEach((item) => {
+      const year = item.year;
+      if (!groupedData[year]) {
+        groupedData[year] = [];
+      }
+      // 将项目添加到对应年份的数组中
+      groupedData[year].push({
+        month: item.month,
+        count: parseInt(item.count, 10), // 将count字段转化为整数
+      });
+    });
+
+    // 将映射对象转化为数组
+    const result = Object.entries(groupedData).map(([year, items]) => ({
+      year: parseInt(year, 10), // 将年份字段转化为整数
+      child: items,
+    }));
+
+    return [result, result?.length || 0];
+  }
 }
