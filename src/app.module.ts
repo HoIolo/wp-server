@@ -13,6 +13,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ArticleModule } from './modules/article/article.module';
 import LogsMiddleware from './common/middleware/logs.middleware';
 import { OssModule } from './modules/oss/oss.module';
+import { CommentModule } from './modules/comment/comment.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { OssModule } from './modules/oss/oss.module';
     AuthModule,
     ArticleModule,
     OssModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [
