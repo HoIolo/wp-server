@@ -29,6 +29,6 @@ export class Comment extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   likes: number;
 
-  @OneToMany(() => Reply, (reply) => reply.id)
+  @OneToMany(() => Reply, (reply) => reply.comment)
   replys: Reply[];
 }

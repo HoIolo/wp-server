@@ -1,22 +1,35 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { PublishCommentDTO } from './dto/publishComment.dto';
 import { code, roles } from 'src/constant';
 import { PUBLISH_COMMENT_RESPONSE } from './constant';
 import { Role } from 'src/common/decorator/role.decorator';
+import { PageDTO } from 'src/common/dto/page.dto';
 
 @Controller()
 @Role(roles.VISITOR)
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Post('/comment')
+  @Get('comments')
+  async getComments(@Query() pageDto: PageDTO) {
+    const [rows, count] = await this.commentService.findAllByPage(pageDto);
+
+    return {
+      rows,
+      count,
+    };
+  }
+
+  @Post('comment')
   async publishComment(@Body() publishCommentDto: PublishCommentDTO) {
     const result = await this.commentService.createComment(publishCommentDto);
     if (!result) {

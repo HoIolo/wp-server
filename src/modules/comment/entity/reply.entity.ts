@@ -10,7 +10,7 @@ export class Reply extends BaseEntity {
   @Index()
   user: User;
 
-  @ManyToOne(() => Comment, { nullable: false })
+  @ManyToOne(() => Comment, (comment) => comment.replys)
   @JoinColumn({ name: 'comment_id' })
   @Index()
   comment: Comment;

@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entity/comment.entity';
 import { User } from '../user/entity/user.entity';
 import { Article } from '../article/entity/article.entity';
+import { PageDTO } from 'src/common/dto/page.dto';
+import { handlePage } from 'src/utils/common';
 
 @Injectable()
 export class CommentService {
@@ -17,6 +19,22 @@ export class CommentService {
     private readonly articleRepository: Repository<Article>,
     private dataSource: DataSource,
   ) {}
+
+  /**
+   * 查询所以评论（分页）
+   * @param pageDto
+   * @returns
+   */
+  async findAllByPage(pageDto: PageDTO) {
+    const { skip, offset } = handlePage(pageDto);
+
+    return this.commentRepository
+      .createQueryBuilder('comment')
+      .skip(skip)
+      .take(offset as number)
+      .leftJoinAndSelect('comment.replys', 'replys')
+      .getManyAndCount();
+  }
 
   /**
    * 创建评论
