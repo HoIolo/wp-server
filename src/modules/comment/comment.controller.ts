@@ -12,10 +12,13 @@ import {
 import { CommentService } from './comment.service';
 import { PublishCommentDTO } from './dto/publishComment.dto';
 import { code, roles } from 'src/constant';
-import { PUBLISH_COMMENT_RESPONSE } from './constant';
+import { PUBLISH_COMMENT_RESPONSE, REPLY_COMMENT_RESPONSE } from './constant';
 import { Role } from 'src/common/decorator/role.decorator';
 import { PageDTO } from 'src/common/dto/page.dto';
+import { ReplyCommentDto } from '../article/dto/replyComment.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('comment')
 @Controller()
 @Role(roles.VISITOR)
 export class CommentController {
@@ -78,6 +81,29 @@ export class CommentController {
     return {
       rows,
       count,
+    };
+  }
+
+  /**
+   * 回复评论
+   * @param replyCommentDto
+   * @returns
+   */
+  @Post('comment/reply')
+  async replyComment(@Body() replyCommentDto: ReplyCommentDto) {
+    const result = await this.commentService.createReply(replyCommentDto);
+    if (result === null) {
+      throw new HttpException(
+        {
+          message: REPLY_COMMENT_RESPONSE.REPLY_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+    return {
+      row: result,
+      message: REPLY_COMMENT_RESPONSE.REPLY_SUCCESS,
     };
   }
 }

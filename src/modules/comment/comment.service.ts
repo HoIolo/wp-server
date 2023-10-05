@@ -7,6 +7,8 @@ import { User } from '../user/entity/user.entity';
 import { Article } from '../article/entity/article.entity';
 import { PageDTO } from 'src/common/dto/page.dto';
 import { handlePage } from 'src/utils/common';
+import { ReplyCommentDto } from '../article/dto/replyComment.dto';
+import { Reply } from './entity/reply.entity';
 
 @Injectable()
 export class CommentService {
@@ -93,5 +95,45 @@ export class CommentService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  /**
+   * 创建回复
+   * @param replyCommentDto
+   * @returns
+   */
+  async createReply(replyCommentDto: ReplyCommentDto) {
+    const { user_id, comment_id } = replyCommentDto;
+    const user = await this.userRepository.findOneBy({ id: user_id });
+    if (!user) {
+      return null;
+    }
+    const comment = await this.commentRepository.findOneBy({ id: comment_id });
+    if (!comment) {
+      return null;
+    }
+    const reply = new Reply();
+    const mergeReply = Object.assign(reply, replyCommentDto, { user, comment });
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    let saveReply = null;
+    try {
+      saveReply = await queryRunner.manager.save(mergeReply);
+      if (!saveReply) {
+        return null;
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      Logger.error(e);
+    } finally {
+      await queryRunner.release();
+    }
+
+    return saveReply;
   }
 }
