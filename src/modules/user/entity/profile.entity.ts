@@ -1,11 +1,13 @@
-import { Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from 'src/common/entity/base.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Profile extends BaseEntity {
   @Index()
-  @Column({ nullable: true, type: 'bigint' })
-  user_id: number;
+  @OneToOne(() => User, (user) => user.profile, { nullable: true })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column()
   name: string;

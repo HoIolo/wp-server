@@ -55,6 +55,6 @@ export class RoleGuard implements CanActivate {
     // 未登录，游客，放行
     if (!userProfile) return true;
 
-    return this.userService.matchRole(role, userProfile.user_id);
+    return this.userService.matchRole(role, userProfile.user.id);
   }
 }

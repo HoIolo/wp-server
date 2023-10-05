@@ -9,6 +9,7 @@ import { encryptPassword, makeSalt } from 'src/utils/cryptogram';
 import { SYSTEM_ERROR } from './constant';
 import { code } from 'src/constant';
 import { ProfileDTO } from './dto/profile.dto';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class UserService {
@@ -62,10 +63,15 @@ export class UserService {
    * @param uid
    * @returns
    */
-  findProfileByUid(user_id: number) {
-    return this.profilesRepository.findOneBy({
-      user_id,
-    });
+  async findProfileByUid(user_id: number) {
+    const result = await this.profilesRepository
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.user', 'user')
+      .where('user.id', [user_id])
+      .getOne();
+
+    result.user = plainToClass(User, result.user);
+    return result;
   }
 
   saveUser(registerDTO: RegisterDTO) {

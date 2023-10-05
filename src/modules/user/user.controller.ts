@@ -95,6 +95,7 @@ export class UserController {
       case 1:
         const { id } = authResult.user;
         const profile = await this.userService.findProfileByUid(id);
+
         return await this.authService.login(profile);
       case 2:
         throw new HttpException(
