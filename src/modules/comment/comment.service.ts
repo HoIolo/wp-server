@@ -9,6 +9,7 @@ import { PageDTO } from 'src/common/dto/page.dto';
 import { handlePage } from 'src/utils/common';
 import { ReplyCommentDto } from '../article/dto/replyComment.dto';
 import { Reply } from './entity/reply.entity';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class CommentService {
@@ -46,13 +47,30 @@ export class CommentService {
    */
   async findByArticleId(articleId: number, pageDto: PageDTO) {
     const { skip, offset } = handlePage(pageDto);
-    return await this.commentRepository
+    const [rows, count] = await this.commentRepository
       .createQueryBuilder('comment')
       .skip(skip)
       .take(offset as number)
-      .where('article_id', [articleId])
+      .where('article_id = :articleId', {
+        articleId,
+      })
+      .leftJoinAndSelect('comment.user', 'user')
+      .leftJoinAndSelect('user.profile', 'profile')
       .leftJoinAndSelect('comment.replys', 'replys')
+      .leftJoinAndSelect('replys.user', 'replyUser')
+      .leftJoinAndSelect('replyUser.profile', 'replyUserProfile')
+      .orderBy('comment.id', 'DESC')
       .getManyAndCount();
+
+    const newRows = rows.map((row) => {
+      row.user = plainToClass(User, row.user);
+      row.replys.map((reply) => {
+        reply.user = plainToClass(User, reply.user);
+        return reply;
+      });
+      return row;
+    });
+    return [newRows, count];
   }
 
   /**
