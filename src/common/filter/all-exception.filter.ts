@@ -15,6 +15,7 @@ export class AllExceptionFilter implements ExceptionFilter {
     const res = ctx.getResponse<Response>();
     const req = ctx.getRequest<Request>();
     Logger.error(exception);
+    console.log(exception);
 
     res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
       code: HttpStatus.SERVICE_UNAVAILABLE,
