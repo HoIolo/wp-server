@@ -64,10 +64,12 @@ export class UserService {
    * @returns
    */
   async findProfileByUid(user_id: number) {
+    console.log(user_id);
+
     const result = await this.profilesRepository
       .createQueryBuilder('profile')
       .leftJoinAndSelect('profile.user', 'user')
-      .where('user.id', [user_id])
+      .where('user.id = :userId', { userId: user_id })
       .getOne();
 
     result.user = plainToClass(User, result.user);
