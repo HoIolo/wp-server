@@ -62,7 +62,12 @@ export class CommentService {
       .leftJoinAndSelect('comment.replys', 'replys')
       .leftJoinAndSelect('replys.user', 'replyUser')
       .leftJoinAndSelect('replyUser.profile', 'replyUserProfile')
+      .leftJoin('comment.likes', 'commentLikes')
+      .addSelect(['commentLikes.id', 'commentLikes.account'])
+      .leftJoin('replys.likes', 'replyLikes')
+      .addSelect(['replyLikes.id', 'replyLikes.account'])
       .orderBy('comment.id', 'DESC')
+      .addOrderBy('replys.id', 'DESC')
       .getManyAndCount();
 
     const newRows = rows.map((row) => {
