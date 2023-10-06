@@ -10,6 +10,7 @@ import { handlePage } from 'src/utils/common';
 import { ReplyCommentDto } from '../article/dto/replyComment.dto';
 import { Reply } from './entity/reply.entity';
 import { plainToClass } from 'class-transformer';
+import { LikesDTO } from './dto/likes.dto';
 
 @Injectable()
 export class CommentService {
@@ -20,6 +21,8 @@ export class CommentService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
+    @InjectRepository(Reply)
+    private readonly replyRepository: Repository<Reply>,
     private dataSource: DataSource,
   ) {}
 
@@ -153,5 +156,33 @@ export class CommentService {
     }
 
     return saveReply;
+  }
+
+  /**
+   * 更新评论点赞
+   * @param commentId
+   * @param likesDto
+   * @returns
+   */
+  async updateCommentLikes(commentId: number, likesDto: LikesDTO) {
+    const { flag = true, isReply = false } = likesDto;
+    const comment = isReply
+      ? await this.replyRepository.findOneBy({ id: commentId })
+      : await this.commentRepository.findOneBy({ id: commentId });
+    if (!comment) {
+      return null;
+    }
+    // 评论不能为负数
+    if (comment.likes === 0 && !flag) {
+      return null;
+    }
+    comment.likes += flag ? 1 : -1;
+    const saveComment = isReply
+      ? await this.replyRepository.save(comment)
+      : await this.commentRepository.save(comment);
+    if (!saveComment) {
+      return null;
+    }
+    return saveComment;
   }
 }

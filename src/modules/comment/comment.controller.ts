@@ -6,17 +6,23 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { PublishCommentDTO } from './dto/publishComment.dto';
 import { code, roles } from 'src/constant';
-import { PUBLISH_COMMENT_RESPONSE, REPLY_COMMENT_RESPONSE } from './constant';
+import {
+  LIKES_COMMENT_RESPONSE,
+  PUBLISH_COMMENT_RESPONSE,
+  REPLY_COMMENT_RESPONSE,
+} from './constant';
 import { Role } from 'src/common/decorator/role.decorator';
 import { PageDTO } from 'src/common/dto/page.dto';
 import { ReplyCommentDto } from '../article/dto/replyComment.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { LikesDTO } from './dto/likes.dto';
 
 @ApiTags('comment')
 @Controller()
@@ -104,6 +110,38 @@ export class CommentController {
     return {
       row: result,
       message: REPLY_COMMENT_RESPONSE.REPLY_SUCCESS,
+    };
+  }
+
+  /**
+   * 评论点赞
+   * @param commentId
+   * @param likesDto
+   * @returns
+   */
+  @Patch('comment/:commentId/likes')
+  async likesComment(
+    @Param('commentId', ParseIntPipe) commentId,
+    @Body() likesDto: LikesDTO,
+  ) {
+    const result = await this.commentService.updateCommentLikes(
+      commentId,
+      likesDto,
+    );
+
+    if (result === null) {
+      throw new HttpException(
+        {
+          message: LIKES_COMMENT_RESPONSE.LIKES_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+
+    return {
+      row: result,
+      message: LIKES_COMMENT_RESPONSE.LIKES_SUCCESS,
     };
   }
 }
