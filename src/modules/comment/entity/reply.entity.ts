@@ -1,6 +1,14 @@
 import { BaseEntity } from 'src/common/entity/base.entity';
 import { User } from 'src/modules/user/entity/user.entity';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+} from 'typeorm';
 import { Comment } from './comment.entity';
 
 @Entity()
@@ -18,6 +26,10 @@ export class Reply extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   content: string;
 
-  @Column({ type: 'int', default: 0 })
-  likes: number;
+  @JoinTable({
+    joinColumn: { name: 'reply_id' },
+    inverseJoinColumn: { name: 'user_id' },
+  })
+  @ManyToMany(() => User)
+  likes: User[];
 }

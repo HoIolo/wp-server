@@ -165,24 +165,51 @@ export class CommentService {
    * @returns
    */
   async updateCommentLikes(commentId: number, likesDto: LikesDTO) {
-    const { flag = true, isReply = false } = likesDto;
-    const comment = isReply
-      ? await this.replyRepository.findOneBy({ id: commentId })
-      : await this.commentRepository.findOneBy({ id: commentId });
-    if (!comment) {
+    const { flag = true, isReply = false, userId } = likesDto;
+    const user = await this.userRepository.findOneBy({ id: userId });
+    // 不存在这个用户
+    if (!user) {
       return null;
     }
-    // 评论不能为负数
-    if (comment.likes === 0 && !flag) {
-      return null;
+
+    const querRunner = this.dataSource.createQueryRunner();
+    await querRunner.connect();
+    await querRunner.startTransaction();
+
+    let result = null;
+
+    try {
+      const comment = isReply
+        ? await this.replyRepository.findOne({
+            where: { id: commentId },
+          })
+        : await this.commentRepository.findOne({
+            where: { id: commentId },
+          });
+      // 不存在这条评论
+      if (!comment) {
+        return null;
+      }
+
+      const relationBuilder = querRunner.manager
+        .createQueryBuilder()
+        .relation(isReply ? Reply : Comment, 'likes')
+        .of(comment);
+
+      if (flag) {
+        result = await relationBuilder.add(user);
+      } else {
+        result = await relationBuilder.remove(user);
+      }
+
+      await querRunner.commitTransaction();
+      return result;
+    } catch (e) {
+      await querRunner.rollbackTransaction();
+    } finally {
+      await querRunner.release();
     }
-    comment.likes += flag ? 1 : -1;
-    const saveComment = isReply
-      ? await this.replyRepository.save(comment)
-      : await this.commentRepository.save(comment);
-    if (!saveComment) {
-      return null;
-    }
-    return saveComment;
+
+    return result;
   }
 }

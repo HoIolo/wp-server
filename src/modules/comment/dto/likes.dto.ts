@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 
 export class LikesDTO {
   @ApiProperty()
@@ -11,4 +11,8 @@ export class LikesDTO {
   @IsBoolean()
   @IsOptional()
   isReply: boolean;
+
+  @ApiProperty()
+  @IsNumber()
+  userId: number;
 }

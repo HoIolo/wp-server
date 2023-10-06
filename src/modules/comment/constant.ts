@@ -11,6 +11,6 @@ export const REPLY_COMMENT_RESPONSE = {
 };
 
 export const LIKES_COMMENT_RESPONSE = {
-  LIKES_ERROR: '点赞失败，请检查参数是否正确',
-  LIKES_SUCCESS: '点赞成功！',
+  LIKES_ERROR: '请求失败，请检查参数是否正确',
+  LIKES_SUCCESS: '请求成功！',
 };

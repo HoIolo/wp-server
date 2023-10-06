@@ -6,6 +6,8 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
 } from 'typeorm';
@@ -26,8 +28,12 @@ export class Comment extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   content: string;
 
-  @Column({ type: 'int', default: 0 })
-  likes: number;
+  @JoinTable({
+    joinColumn: { name: 'comment_id' },
+    inverseJoinColumn: { name: 'user_id' },
+  })
+  @ManyToMany(() => User)
+  likes: User[];
 
   @OneToMany(() => Reply, (reply) => reply.comment)
   replys: Reply[];
