@@ -1,73 +1,116 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# <center>博客API服务</center>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 项目介绍
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+本项目为Nest.js完成的博客API服务，集成权限验证，对象储存，webSocket聊天功能
 
-## Description
+### 项目使用技术
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Nest.js （Node.js开发框架） + TypeORM（数据库操作） + Passport（权限验证） + Ali-Oss（对象储存） + Socket.io（实时通信）+ Multer（文件上传）
 
-## Installation
+### 目录介绍
 
-```bash
-$ npm install
+```shell
+src  # 项目目录
+-- common  # 通用模块
+   -- decorator # 自定义装饰器
+   -- dto # 通用dto验证文件
+   -- entity # 通用实体
+   -- filtter # 过滤器
+   -- guard  # 守卫
+   -- interceptor # 拦截器
+   -- logger # 日志
+   -- middleware # 中间件
+-- config  # 配置文件
+-- constant # 常量配置
+-- modules # 实体、接口都写里面
+   -- user
+      -- dto # dto 验证配置
+      -- entity # 数据实体
+      -- user.controll.ts # user 控制器
+      -- user.module.ts  # user 模块 （管理controller，service之类的模块）
+      -- user.service.ts  # user 服务提供（数据库操作）
+-- template # 模板文件
+-- utils  # 封装的工具类
+-- app.controller.spec.ts # app.controller.ts 测试文件
+-- app.controller.ts  # app控制器
+-- app.module.ts  # app 模块
+-- app.service.ts  # app 服务提供
+-- main.ts  # 主入口
+test # 测试目录
+.env.example  # 置环境示例
+.eslintrc.js # eslit 配置
+.gitignore   # git 提交忽略文件
+.prettierrc  # pettier 配置文件
+README.md    # 阅读指南
+nest-cli.json # nest cli 配置
+package.json # 依赖包管理
+pnpm-lock.yaml  # 依赖包版本锁定文件
+tsconfig.build.json  # ts打包配置
+tsconfig.json  # ts 配置
 ```
 
-## Running the app
 
-```bash
-# development
-$ npm run start
 
-# watch mode
-$ npm run start:dev
+## 项目启动
 
-# production mode
-$ npm run start:prod
+### 环境配置
+
+```shell
+NODE_ENV=development
+ALLOW_ORIGIN=http://localhost:5000
+# 数据库配置
+DB_TYPE=mysql
+DB_PORT=3306
+DB_HOST=localhost
+DB_USERNAME=root
+DB_PASSWORD=123456
+DB_DATABASE=dbname
+
+# jwt配置
+JWT_SECRET=my_secret
+
+# 邮箱配置
+MAIL_USER=xxxxx@qq.com
+MAIL_PASS=xxxxxx
+MAIL_DEFAULT_FROM="name" <xxxxx@qq.com>
+
+# oss配置
+accessKeyId=xxxxxxxxxx
+accessKeySecret=xxxxxxxxxx
+bucket=xxxxxxxx
+region=oss-cn-beijing
+OSS_UPLOAD_IMAGE_PATH=image/
+
+# 图片上传
+UPLOAD_IMAGE_PATH=upload/oss/image/
 ```
 
-## Test
+> 注意：环境变量值缺一不可，否则无法正常运行！
 
-```bash
-# unit tests
-$ npm run test
 
-# e2e tests
-$ npm run test:e2e
 
-# test coverage
-$ npm run test:cov
+### 依赖安装
+
+```sh
+pnpm install
 ```
 
-## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## Stay in touch
+### 启动命令（开发环境）
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```sh
+# npm 
+npm run start:dev
 
-## License
+# cnpm 
+cnpm run start:dev
 
-Nest is [MIT licensed](LICENSE).
+# pnpm 
+pnpm run start:dev
+
+# yarn
+yarn run start:dev
+```
+
