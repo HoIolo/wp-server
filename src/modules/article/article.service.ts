@@ -36,7 +36,13 @@ export class ArticleService {
    * @returns
    */
   async findById(article_id: number) {
-    return this.articleRepository.findOneBy({ id: article_id });
+    return this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoin('article.author', 'author')
+      .addSelect(['author.id', 'author.account'])
+      .leftJoinAndSelect('author.profile', 'profile')
+      .where('article.id = :id', { id: article_id })
+      .getOne();
   }
 
   /**

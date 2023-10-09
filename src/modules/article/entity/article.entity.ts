@@ -1,11 +1,13 @@
 import { BaseEntity } from 'src/common/entity/base.entity';
-import { Column, Entity, Index } from 'typeorm';
+import { User } from 'src/modules/user/entity/user.entity';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Article extends BaseEntity {
-  @Column({ type: 'bigint' })
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'author_id' })
   @Index()
-  author_id: number;
+  author: User;
 
   @Column()
   title: string;
