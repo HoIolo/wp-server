@@ -36,6 +36,16 @@ export class ArticleService {
    * @returns
    */
   async findById(article_id: number) {
+    const article = await this.articleRepository.findOneBy({ id: article_id });
+    if (!article) {
+      return null;
+    }
+    // 文章浏览量 + 1
+    await this.articleRepository
+      .createQueryBuilder()
+      .update()
+      .set({ watch_num: article.watch_num + 1 })
+      .execute();
     return this.articleRepository
       .createQueryBuilder('article')
       .leftJoin('article.author', 'author')

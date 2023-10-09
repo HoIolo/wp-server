@@ -111,7 +111,13 @@ export class CommentService {
     try {
       const saveComment = await queryRunner.manager.save(mergeComment);
       if (!saveComment) return null;
-
+      // 文章评论数 + 1
+      await queryRunner.manager
+        .createQueryBuilder()
+        .update(Article)
+        .set({ comment_num: article.comment_num + 1 })
+        .where('id = :id', { id: article_id })
+        .execute();
       await queryRunner.commitTransaction();
       return saveComment;
     } catch (e) {
