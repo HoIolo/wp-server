@@ -70,47 +70,53 @@ export class ArticleService {
   }
 
   /**
+   * 根据年份和日期查询
+   * @param year
+   * @param month
+   * @returns
+   */
+  async findByYearAndMonth(year: number, month: number) {
+    return this.articleRepository
+      .createQueryBuilder()
+      .where('YEAR(publish_date) = :year and MONTH(publish_date) = :month', {
+        year: year,
+        month,
+      })
+      .orderBy('id', 'DESC')
+      .getManyAndCount();
+  }
+
+  /**
    * 获取时间轴
    * @param pageDto
    */
   async findTimeLine() {
     const data = await this.articleRepository
       .createQueryBuilder('article')
-      .select([
-        'YEAR(article.publish_date) as year',
-        'MONTH(article.publish_date) as month',
-        'COUNT(*) as count',
-      ])
+      .select('YEAR(publish_date)', 'year')
+      .addSelect('MONTH(publish_date)', 'month')
       .groupBy('year, month')
-      .orderBy('year', 'DESC')
+      .orderBy('month', 'DESC')
       .getRawMany();
 
-    if (data === null || data === undefined) {
-      return [null, 0];
+    for (const item of data) {
+      const [child, count] = await this.findByYearAndMonth(
+        item.year,
+        item.month,
+      );
+      item.child = {
+        rows: child,
+        count,
+      };
     }
 
-    // 创建一个映射对象以存储按年份分组的数据
-    const groupedData = {};
-
-    // 遍历原始数据并按年份分组
-    data.forEach((item) => {
-      const year = item.year;
-      if (!groupedData[year]) {
-        groupedData[year] = [];
-      }
-      // 将项目添加到对应年份的数组中
-      groupedData[year].push({
-        month: item.month,
-        count: parseInt(item.count, 10), // 将count字段转化为整数
-      });
-    });
-
-    // 将映射对象转化为数组
-    const result = Object.entries(groupedData).map(([year, items]) => ({
-      year: parseInt(year, 10), // 将年份字段转化为整数
-      child: items,
-    }));
-
-    return [result, result?.length || 0];
+    const gruop = await this.articleRepository
+      .createQueryBuilder()
+      .select(
+        'COUNT(DISTINCT CONCAT(YEAR(publish_date), MONTH(publish_date)))',
+        'count',
+      )
+      .getRawOne();
+    return [data, gruop.count];
   }
 }
