@@ -45,6 +45,7 @@ export class ArticleService {
       .createQueryBuilder()
       .update()
       .set({ watch_num: article.watch_num + 1 })
+      .where('id = :id', { id: article_id })
       .execute();
     return this.articleRepository
       .createQueryBuilder('article')
