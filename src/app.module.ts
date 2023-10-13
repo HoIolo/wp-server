@@ -14,6 +14,7 @@ import { ArticleModule } from './modules/article/article.module';
 import LogsMiddleware from './common/middleware/logs.middleware';
 import { OssModule } from './modules/oss/oss.module';
 import { CommentModule } from './modules/comment/comment.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { CommentModule } from './modules/comment/comment.module';
     ArticleModule,
     OssModule,
     CommentModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [
