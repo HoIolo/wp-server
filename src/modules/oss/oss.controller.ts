@@ -7,6 +7,8 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -17,6 +19,7 @@ import { Role } from 'src/common/decorator/role.decorator';
 import { ConfigService } from '@nestjs/config';
 import path = require('path');
 import fs = require('fs');
+import fsPm = require('fs/promises');
 import { UPLOAD_RESPONSE } from './constant';
 
 @ApiBearerAuth() // Swagger 的 JWT 验证
@@ -130,6 +133,33 @@ export class OssController {
 
     return {
       imageUrls: ossUrls,
+    };
+  }
+
+  /**
+   * 获取图片列表
+   * @param local 是否获取本地储存
+   * @returns
+   */
+  @Get('images')
+  async getImages(@Query('local') local: string = 'false') {
+    let images = null;
+    if (local === 'true') {
+      const UPLOAD_IMAGE_PATH = 'UPLOAD_IMAGE_PATH';
+      const dirPath = this.configService.get(UPLOAD_IMAGE_PATH);
+      const files = await fsPm.readdir(dirPath);
+      images = files.map((file) => {
+        return {
+          name: file,
+          url: path.join(dirPath, file),
+        };
+      });
+    } else {
+      images = await this.ossService.getImageList();
+    }
+
+    return {
+      images,
     };
   }
 }

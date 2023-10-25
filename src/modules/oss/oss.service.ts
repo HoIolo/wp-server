@@ -86,4 +86,10 @@ export class OssService {
       return await this.putOssFile(ossPath, localPath);
     }
   }
+
+  public async getImageList() {
+    const list = await this.client.list();
+    const images = list.objects;
+    return images;
+  }
 }
