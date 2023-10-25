@@ -45,12 +45,26 @@ export class OssController {
       }),
     }),
   )
-  async uploadImage(@UploadedFile() file: Express.Multer.File): Promise<any> {
-    const ossUrl = await this.ossService.validateFile(
-      `${this.configService.get('OSS_UPLOAD_IMAGE_PATH')}${file.originalname}`,
-      `${this.configService.get('UPLOAD_IMAGE_PATH')}${file.originalname}`,
-      file.size,
-    );
+  async uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('local') local: string = 'false',
+  ): Promise<any> {
+    let ossUrl = '';
+    const destinationPath = `${this.configService.get('UPLOAD_IMAGE_PATH')}${
+      file.originalname
+    }`;
+    if (local == 'true') {
+      ossUrl = destinationPath;
+    } else {
+      // 验证并上传文件到OSS
+      ossUrl = await this.ossService.validateFile(
+        `${this.configService.get('OSS_UPLOAD_IMAGE_PATH')}${
+          file.originalname
+        }`,
+        destinationPath,
+        file.size,
+      );
+    }
 
     return {
       imageUrl: ossUrl,
