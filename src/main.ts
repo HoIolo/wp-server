@@ -17,7 +17,7 @@ async function bootstrap() {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
   app.enableCors({
-    origin: [process.env.ALLOW_ORIGIN],
+    origin: process.env.ALLOW_ORIGIN.split(','),
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
@@ -29,9 +29,7 @@ async function bootstrap() {
       rolling: true,
       saveUninitialized: true,
       cookie: {
-        //	允许跨站和同站请求中均发送cookie
-        sameSite: 'none',
-        secure: true,
+        secure: 'auto',
         maxAge: 1000 * 60 * 30,
       },
     }),
