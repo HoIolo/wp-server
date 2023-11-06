@@ -116,6 +116,7 @@ export class UserService {
       const mergeProfile = Object.assign(profile, {
         user_id: saveUser.id,
         name: saveUser.account,
+        user: saveUser,
       });
 
       const saveProfile = await queryRunner.manager.save<Profile>(mergeProfile);
