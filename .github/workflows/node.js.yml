@@ -13,11 +13,12 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    defaults:
+       run:
+         working-directory: ./xiaoxiserver/
     strategy:
       matrix:
         node-version: [18.16.0]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v3
@@ -26,9 +27,22 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    # 下载pnpm
-    - name: install pnpm
-      run: npm install -g pnpm
+        cache-dependency-path: './xiaoxiserver/pnpm-lock.yaml'
+
+    - uses: pnpm/action-setup@v2
+      name: Install pnpm
+      with:
+        version: 8
+        run_install: false
+
+    - uses: actions/cache@v3
+      name: Setup pnpm cache
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
     # 下载依赖
     - name: install
       run: pnpm install
