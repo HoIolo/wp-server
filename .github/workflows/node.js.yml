@@ -1,0 +1,61 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.16.0]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+    # 下载依赖
+    - name: install
+      run : pnpm install
+    # 打包
+    - name: build
+      run: pnpm build
+    # 部署
+    - name: develop
+      run: start:prod
+
+    - name: ssh scp ssh pipelines #使用市场找到的action来将项目build的产物传到我的服务器
+      uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+      env:
+        WELCOME: "ssh scp ssh pipelines"
+        LASTSSH: "Doing something after copying"
+      with:
+        host: ${{ secrets.AL_SERVER_IP }} # 服务器的ip
+        user: ${{ secrets.AL_SERVER_NAME }} # 服务器的账号
+        pass: ${{ secrets.AL_SERVER_PASSWORD }} # 服务器的密码
+        connect_timeout: 10s
+        first_ssh: | #这部分是在服务器上，传输文件前执行的命令，关闭并删除运行中的旧版本
+          pm2 delete all
+          cd /www/wwwserver/xiaoxiserver/
+          rm -rf dist
+        scp: | #将build生成的文件从GitHub服务器的相应目录，传到我服务器的相应目录
+          ./dist => /www/wwwserver/xiaoxiserver
+          ./package.json => /www/wwwserver/xiaoxiserver
+          ./pnpm-lock.yaml => /www/wwwserver/xiaoxiserver
+        last_ssh: | #这部分是在服务器上，传输文件后执行的命令，新版本重新安装依赖并运行
+          cd /www/wwwserver/xiaoxiserver
+          pnpm install
+          pm2 start ./dist/main.js
+   
