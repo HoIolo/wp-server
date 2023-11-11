@@ -46,7 +46,7 @@ jobs:
       run: pnpm build
     # 部署
     - name: develop
-      run: start:prod
+      run: pnpm start:prod
 
     - name: ssh scp ssh pipelines #使用市场找到的action来将项目build的产物传到我的服务器
       uses: cross-the-world/ssh-scp-ssh-pipelines@latest
