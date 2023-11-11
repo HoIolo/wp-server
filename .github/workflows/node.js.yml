@@ -25,7 +25,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
+        cache: 'npm'
     # 下载pnpm
     - name: install pnpm
       run: npm install -g pnpm
