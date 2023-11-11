@@ -59,20 +59,20 @@ export class CommentService {
       })
       .leftJoinAndSelect('comment.user', 'user')
       .leftJoinAndSelect('user.profile', 'profile')
+      .leftJoin('comment.likes', 'commentLikes')
       .leftJoinAndSelect('comment.replys', 'replys')
+      .addSelect(['commentLikes.id', 'commentLikes.account'])
       .leftJoinAndSelect('replys.user', 'replyUser')
       .leftJoinAndSelect('replyUser.profile', 'replyUserProfile')
-      .leftJoin('comment.likes', 'commentLikes')
-      .addSelect(['commentLikes.id', 'commentLikes.account'])
       .leftJoin('replys.likes', 'replyLikes')
       .addSelect(['replyLikes.id', 'replyLikes.account'])
-      .orderBy('comment.id', 'DESC')
       .addOrderBy('replys.id', 'DESC')
+      .orderBy('comment.id', 'DESC')
       .getManyAndCount();
 
     const newRows = rows.map((row) => {
       row.user = plainToClass(User, row.user);
-      row.replys.map((reply) => {
+      row.replys?.map((reply) => {
         reply.user = plainToClass(User, reply.user);
         return reply;
       });

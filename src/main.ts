@@ -26,10 +26,9 @@ async function bootstrap() {
     session({
       secret: 'my-secret',
       resave: false,
-      rolling: true,
       saveUninitialized: true,
       cookie: {
-        secure: 'auto',
+        secure: true,
         maxAge: 1000 * 60 * 30,
       },
     }),
