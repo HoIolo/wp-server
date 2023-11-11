@@ -13,9 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    defaults:
-       run:
-         working-directory: ./xiaoxiserver/
     strategy:
       matrix:
         node-version: [18.16.0]
@@ -26,8 +23,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        #cache: 'npm'
-        #cache-dependency-path: './xiaoxiserver/pnpm-lock.yaml'
 
     - uses: pnpm/action-setup@v2
       name: Install pnpm
