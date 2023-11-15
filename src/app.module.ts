@@ -15,6 +15,7 @@ import LogsMiddleware from './common/middleware/logs.middleware';
 import { OssModule } from './modules/oss/oss.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { CacheModule } from './cache.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ChatModule } from './modules/chat/chat.module';
       inject: [ConfigService],
       useFactory: dbFactory,
     }),
+    CacheModule,
     UserModule,
     AuthModule,
     ArticleModule,
