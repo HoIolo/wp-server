@@ -9,11 +9,11 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
-  Session,
   Req,
   Param,
   Patch,
   ParseIntPipe,
+  Inject,
 } from '@nestjs/common';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { LoginDTO } from './dto/login.dto';
@@ -34,6 +34,7 @@ import { Request } from 'express';
 import { Role } from 'src/common/decorator/role.decorator';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './entity/user.entity';
+import { Redis } from 'ioredis';
 
 @ApiTags('user')
 @Controller()
@@ -42,6 +43,8 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    @Inject('REDIS_CLIENT')
+    private readonly redis: Redis,
   ) {}
 
   @UseGuards(AuthGuard('jwt'))
@@ -120,11 +123,9 @@ export class UserController {
    * @returns
    */
   @Post('/user')
-  async register(
-    @Body() registerDTO: RegisterDTO,
-    @Session() session: Record<string, any>,
-  ) {
-    const emailCode = session[registerDTO.email];
+  async register(@Body() registerDTO: RegisterDTO) {
+    const emailCode = await this.redis.get(registerDTO.email);
+
     // 校验验证码
     if (!emailCode || emailCode != registerDTO.email_code) {
       throw new HttpException(
@@ -148,8 +149,8 @@ export class UserController {
         { message: SYSTEM_ERROR, code: code.SYSTEM_ERROR },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    // 注册成功，删除验证码session
-    session[registerDTO.email] = null;
+    // 注册成功，删除验证码
+    this.redis.del(registerDTO.email);
     return {
       message: REGISTER_SUCCESS,
     };
