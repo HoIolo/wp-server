@@ -1,11 +1,17 @@
 import { Logger as TypeOrmLogger } from 'typeorm';
-import { Logger as NestLogger } from '@nestjs/common';
+import { createLogger } from 'winston';
+import { getDatabaseLoggerConfig } from 'src/config/logger.config';
+import { ConfigService } from '@nestjs/config';
 
 class DatabaseLogger implements TypeOrmLogger {
-  private readonly logger = new NestLogger('SQL');
+  // private readonly logger = new NestLogger('SQL');
+
+  private readonly logger = createLogger(
+    getDatabaseLoggerConfig(new ConfigService()),
+  );
 
   logQuery(query: string, parameters?: unknown[]) {
-    this.logger.log(
+    this.logger.info(
       `${query} -- Parameters: ${this.stringifyParameters(parameters)}`,
     );
   }
@@ -27,16 +33,16 @@ class DatabaseLogger implements TypeOrmLogger {
   }
 
   logMigration(message: string) {
-    this.logger.log(message);
+    this.logger.info(message);
   }
 
   logSchemaBuild(message: string) {
-    this.logger.log(message);
+    this.logger.info(message);
   }
 
   log(level: 'log' | 'info' | 'warn', message: string) {
     if (level === 'log') {
-      return this.logger.log(message);
+      return this.logger.info(message);
     }
     if (level === 'info') {
       return this.logger.debug(message);

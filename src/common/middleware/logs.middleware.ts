@@ -1,9 +1,11 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { LoggerService } from 'src/modules/logger/logger.service';
 
 @Injectable()
 class LogsMiddleware implements NestMiddleware {
-  private readonly logger = new Logger('HTTP');
+  constructor(private readonly LoggerService: LoggerService) {}
 
   use(request: Request, response: Response, next: NextFunction) {
     response.on('finish', () => {
@@ -21,14 +23,14 @@ class LogsMiddleware implements NestMiddleware {
       const message = `${method} ${originalUrl} ${statusCode} ${statusMessage} ${requestParams}`;
 
       if (statusCode >= 500) {
-        return this.logger.error(message);
+        return this.LoggerService.error(query, message);
       }
 
       if (statusCode >= 400) {
-        return this.logger.warn(message);
+        return this.LoggerService.warn(query, message);
       }
 
-      return this.logger.log(message);
+      return this.LoggerService.info(query, message);
     });
 
     next();

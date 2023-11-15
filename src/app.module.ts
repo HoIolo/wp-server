@@ -16,6 +16,7 @@ import { OssModule } from './modules/oss/oss.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { CacheModule } from './cache.module';
+import { LoggerModule } from './modules/logger/logger.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CacheModule } from './cache.module';
       inject: [ConfigService],
       useFactory: dbFactory,
     }),
+    LoggerModule,
     CacheModule,
     UserModule,
     AuthModule,

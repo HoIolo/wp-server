@@ -13,6 +13,7 @@ export const dbFactory = (config: ConfigService) =>
     keepConnectionAlive: true,
     autoLoadEntities: true,
     timezone: '+08:00',
-    logger: new DatabaseLogger(),
+    logger:
+      config.get('NODE_ENV') === 'development' ? new DatabaseLogger() : false,
     synchronize: true,
-  } as TypeOrmModuleOptions);
+  }) as TypeOrmModuleOptions;
