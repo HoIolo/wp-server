@@ -158,13 +158,14 @@ export class CommentService {
    * @param commentId 评论id
    * @returns
    */
-  async deleteComment(commentId: number) {
+  async deleteComment(commentId: number, type: 'reply' | 'comment') {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const result = await queryRunner.manager.softDelete(Comment, commentId);
+      const Entry = type === 'reply' ? Reply : Comment;
+      const result = await queryRunner.manager.softDelete(Entry, commentId);
       await queryRunner.commitTransaction();
       return result;
     } catch (e) {

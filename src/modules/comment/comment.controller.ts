@@ -176,7 +176,35 @@ export class CommentController {
    */
   @Delete('comment/:commentId')
   async deleteComment(@Param('commentId', ParseIntPipe) commentId) {
-    const result = await this.commentService.deleteComment(commentId);
+    const result = await this.commentService.deleteComment(
+      commentId,
+      'comment',
+    );
+
+    if (result === null) {
+      throw new HttpException(
+        {
+          message: DELETE_COMMENT_RESPONSE.DELETE_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+
+    return {
+      row: result,
+      message: DELETE_COMMENT_RESPONSE.DELETE_SUCCESS,
+    };
+  }
+
+  /**
+   * 删除评论（软删除）
+   * @param commentId 评论id
+   * @returns
+   */
+  @Delete('/comment/reply/:replyId')
+  async deleteReply(@Param('replyId', ParseIntPipe) replyId) {
+    const result = await this.commentService.deleteComment(replyId, 'reply');
 
     if (result === null) {
       throw new HttpException(
