@@ -82,6 +82,30 @@ export class CommentService {
   }
 
   /**
+   * 根据评论id查询回复
+   * @param commentId
+   * @param pageDto
+   * @returns
+   */
+  async findReplyByCommentId(commentId: number, pageDto: PageDTO) {
+    const { skip, offset } = handlePage(pageDto);
+    const [rows, count] = await this.replyRepository
+      .createQueryBuilder('reply')
+      .skip(skip)
+      .take(offset as number)
+      .where('comment_id = :commentId', {
+        commentId,
+      })
+      .leftJoinAndSelect('reply.user', 'user')
+      .getManyAndCount();
+    const newRows = rows.map((row) => {
+      row.user = plainToClass(User, row.user);
+      return row;
+    });
+    return [newRows, count];
+  }
+
+  /**
    * 创建评论
    * @param publishCommentDto
    * @returns

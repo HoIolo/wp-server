@@ -114,6 +114,28 @@ export class CommentController {
   }
 
   /**
+   * 根据评论id获取回复（分页）
+   * @param articleId
+   * @param pageDto
+   * @returns
+   */
+  @Get('/comment/:id/reply')
+  async getReplyBycommentId(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() pageDto: PageDTO,
+  ) {
+    const [rows, count] = await this.commentService.findReplyByCommentId(
+      id,
+      pageDto,
+    );
+
+    return {
+      rows,
+      count,
+    };
+  }
+
+  /**
    * 评论点赞
    * @param commentId
    * @param likesDto
