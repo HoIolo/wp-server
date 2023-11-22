@@ -22,3 +22,10 @@ export const CREATE_ARTICLE_RESPONSE = {
 export const FIND_ARTICLE_RESPONSE = {
   PARAMS_ERROR: '参数错误，不存在这篇文章！',
 };
+
+// 删除文章响应提示
+export const DELETE_ARTICLE_RESPONSE = {
+  SUCCESS: '删除成功！',
+  FAIL: '删除失败，系统繁忙，请稍后再试！',
+  PARAMS_ERROR: '参数错误，不存在这篇文章！',
+};

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -15,7 +16,11 @@ import { code, roles } from 'src/constant';
 import { ArticleService } from './article.service';
 import { GetArticleDTO } from './dto/getArticles.dto';
 import { CreateArticleDTO } from './dto/createArticle.dto';
-import { CREATE_ARTICLE_RESPONSE, FIND_ARTICLE_RESPONSE } from './constant';
+import {
+  CREATE_ARTICLE_RESPONSE,
+  DELETE_ARTICLE_RESPONSE,
+  FIND_ARTICLE_RESPONSE,
+} from './constant';
 import { UserService } from '../user/user.service';
 
 @ApiTags('article')
@@ -112,5 +117,30 @@ export class ArticleController {
         message: CREATE_ARTICLE_RESPONSE.SUCCESS,
       };
     }
+  }
+
+  /**
+   * 删除文章（管理员）
+   * @param id
+   * @returns
+   */
+  @Delete('article/:id')
+  @Role(roles.ADMIN)
+  async deleteArticle(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.articleService.deleteArticle(id);
+    if (result === null) {
+      throw new HttpException(
+        {
+          message: DELETE_ARTICLE_RESPONSE.FAIL,
+          code: code.SYSTEM_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return {
+      row: result,
+      message: DELETE_ARTICLE_RESPONSE.SUCCESS,
+    };
   }
 }

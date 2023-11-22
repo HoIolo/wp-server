@@ -140,4 +140,19 @@ export class ArticleService {
       .getRawOne();
     return [data, gruop.count];
   }
+
+  /**
+   * 删除文章（软删除）
+   * @param article_id
+   * @returns
+   */
+  async deleteArticle(article_id: number) {
+    const result = await this.articleRepository
+      .createQueryBuilder()
+      .useTransaction(true)
+      .softDelete()
+      .where('id = :id', { id: article_id })
+      .execute();
+    return result;
+  }
 }
