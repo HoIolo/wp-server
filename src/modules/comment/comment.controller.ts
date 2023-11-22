@@ -53,6 +53,7 @@ export class CommentController {
    * @returns
    */
   @Post('comment')
+  @Role(roles.LOGGED)
   async publishComment(@Body() publishCommentDto: PublishCommentDTO) {
     const result = await this.commentService.createComment(publishCommentDto);
     if (!result) {
@@ -98,6 +99,7 @@ export class CommentController {
    * @returns
    */
   @Post('comment/reply')
+  @Role(roles.LOGGED)
   async replyComment(@Body() replyCommentDto: ReplyCommentDto) {
     const result = await this.commentService.createReply(replyCommentDto);
     if (result === null) {
@@ -144,6 +146,7 @@ export class CommentController {
    * @returns
    */
   @Patch('comment/:commentId/likes')
+  @Role(roles.LOGGED)
   async likesComment(
     @Param('commentId', ParseIntPipe) commentId,
     @Body() likesDto: LikesDTO,
@@ -175,6 +178,7 @@ export class CommentController {
    * @returns
    */
   @Delete('comment/:commentId')
+  @Role(roles.ADMIN)
   async deleteComment(@Param('commentId', ParseIntPipe) commentId) {
     const result = await this.commentService.deleteComment(
       commentId,
@@ -203,6 +207,7 @@ export class CommentController {
    * @returns
    */
   @Delete('/comment/reply/:replyId')
+  @Role(roles.ADMIN)
   async deleteReply(@Param('replyId', ParseIntPipe) replyId) {
     const result = await this.commentService.deleteComment(replyId, 'reply');
 
