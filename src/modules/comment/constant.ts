@@ -14,3 +14,8 @@ export const LIKES_COMMENT_RESPONSE = {
   LIKES_ERROR: '请求失败，请检查参数是否正确',
   LIKES_SUCCESS: '请求成功！',
 };
+
+export const DELETE_COMMENT_RESPONSE = {
+  DELETE_ERROR: '删除失败，请检查参数是否正确',
+  DELETE_SUCCESS: '删除成功！',
+};

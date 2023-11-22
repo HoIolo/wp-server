@@ -154,6 +154,28 @@ export class CommentService {
   }
 
   /**
+   * 删除评论
+   * @param commentId 评论id
+   * @returns
+   */
+  async deleteComment(commentId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const result = await queryRunner.manager.softDelete(Comment, commentId);
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      return null;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  /**
    * 创建回复
    * @param replyCommentDto
    * @returns

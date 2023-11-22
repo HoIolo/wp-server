@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -14,6 +15,7 @@ import { CommentService } from './comment.service';
 import { PublishCommentDTO } from './dto/publishComment.dto';
 import { code, roles } from 'src/constant';
 import {
+  DELETE_COMMENT_RESPONSE,
   LIKES_COMMENT_RESPONSE,
   PUBLISH_COMMENT_RESPONSE,
   REPLY_COMMENT_RESPONSE,
@@ -164,6 +166,31 @@ export class CommentController {
     return {
       row: result,
       message: LIKES_COMMENT_RESPONSE.LIKES_SUCCESS,
+    };
+  }
+
+  /**
+   * 删除评论（软删除）
+   * @param commentId 评论id
+   * @returns
+   */
+  @Delete('comment/:commentId')
+  async deleteComment(@Param('commentId', ParseIntPipe) commentId) {
+    const result = await this.commentService.deleteComment(commentId);
+
+    if (result === null) {
+      throw new HttpException(
+        {
+          message: DELETE_COMMENT_RESPONSE.DELETE_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+
+    return {
+      row: result,
+      message: DELETE_COMMENT_RESPONSE.DELETE_SUCCESS,
     };
   }
 }
