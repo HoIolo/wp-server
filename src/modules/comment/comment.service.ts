@@ -97,6 +97,7 @@ export class CommentService {
         commentId,
       })
       .leftJoinAndSelect('reply.user', 'user')
+      .leftJoinAndSelect('user.profile', 'profile')
       .getManyAndCount();
     const newRows = rows.map((row) => {
       row.user = plainToClass(User, row.user);
