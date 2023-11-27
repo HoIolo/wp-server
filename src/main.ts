@@ -5,6 +5,7 @@ import * as session from 'express-session';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { TransformInterceptor } from './common/interceptor/transform.interceptor';
 import helmet from 'helmet';
+import { join } from 'path';
 
 // api文档插件
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -15,6 +16,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
+  });
+  app.useStaticAssets(join(__dirname, '..', 'upload'), {
+    prefix: '/upload/',
   });
   app.enableCors({
     origin: process.env.ALLOW_ORIGIN.split(','),

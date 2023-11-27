@@ -57,7 +57,7 @@ export class OssController {
       file.originalname
     }`;
     if (local == 'true') {
-      ossUrl = destinationPath;
+      ossUrl = this.configService.get('API_HOST') + '/' + destinationPath;
     } else {
       // 验证并上传文件到OSS
       ossUrl = await this.ossService.validateFile(
