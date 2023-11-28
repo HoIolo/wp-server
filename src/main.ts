@@ -10,7 +10,6 @@ import { join } from 'path';
 // api文档插件
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import getLogLevels from './utils/getLogLevels';
-import { AllExceptionFilter } from './common/filter/all-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
@@ -42,7 +41,7 @@ async function bootstrap() {
   // 设置全局访问前缀
   app.setGlobalPrefix('/api/v1');
   // 设置全局http异常过滤器
-  app.useGlobalFilters(new AllExceptionFilter(), new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
   // 设置全局参数验证管道
   app.useGlobalPipes(
     new ValidationPipe({

@@ -9,7 +9,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { mailerFactory } from './config/mailer.config';
 import { dbFactory } from './config/db.config';
 import { RoleGuard } from './common/guard/role.guard';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ArticleModule } from './modules/article/article.module';
 import LogsMiddleware from './common/middleware/logs.middleware';
 import { OssModule } from './modules/oss/oss.module';
@@ -17,6 +17,7 @@ import { CommentModule } from './modules/comment/comment.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { CacheModule } from './cache.module';
 import { LoggerModule } from './modules/logger/logger.module';
+import { AllExceptionFilter } from './common/filter/all-exception.filter';
 
 @Module({
   imports: [
@@ -48,6 +49,10 @@ import { LoggerModule } from './modules/logger/logger.module';
     {
       provide: APP_GUARD,
       useClass: RoleGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionFilter,
     },
   ],
 })
