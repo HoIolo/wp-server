@@ -22,6 +22,7 @@ import path = require('path');
 import fs = require('fs');
 import fsPm = require('fs/promises');
 import { UPLOAD_RESPONSE } from './constant';
+import { GetImageDto } from './dto/getImageDto';
 
 @ApiBearerAuth() // Swagger 的 JWT 验证
 @ApiTags('oss')
@@ -143,7 +144,8 @@ export class OssController {
    * @returns
    */
   @Get('images')
-  async getImages(@Query('local') local: string = 'false') {
+  async getImages(@Query() getImageDto: GetImageDto) {
+    const { local = 'false', keyword } = getImageDto;
     let images = null;
     if (local === 'true') {
       const UPLOAD_IMAGE_PATH = 'UPLOAD_IMAGE_PATH';
@@ -156,8 +158,12 @@ export class OssController {
             this.configService.get('API_HOST') + '/' + path.join(dirPath, file),
         };
       });
-    } else {
-      images = await this.ossService.getFileList('image/');
+    }
+    images = await this.ossService.getFileList('image/');
+    if (keyword) {
+      images = images.filter((image) => {
+        return image.name.includes(keyword);
+      });
     }
 
     return {
