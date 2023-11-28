@@ -18,11 +18,11 @@ export class OssService {
   // 创建存储空间。
   private async putBucket(bucketName: string) {
     try {
-      const options = {
-        storageClass: 'Archive', // 存储空间的默认存储类型为标准存储，即Standard。如果需要设置存储空间的存储类型为归档存储，请替换为Archive。
-        acl: 'private', // 存储空间的默认读写权限为私有，即private。如果需要设置存储空间的读写权限为公共读，请替换为public-read。
-        dataRedundancyType: 'ZRS', // 存储空间的默认数据容灾类型为本地冗余存储，即LRS。如果需要设置数据容灾类型为同城冗余存储，请替换为ZRS。
-      };
+      // const options = {
+      //   storageClass: 'Archive', // 存储空间的默认存储类型为标准存储，即Standard。如果需要设置存储空间的存储类型为归档存储，请替换为Archive。
+      //   acl: 'private', // 存储空间的默认读写权限为私有，即private。如果需要设置存储空间的读写权限为公共读，请替换为public-read。
+      //   dataRedundancyType: 'ZRS', // 存储空间的默认数据容灾类型为本地冗余存储，即LRS。如果需要设置数据容灾类型为同城冗余存储，请替换为ZRS。
+      // };
       const result = await this.client.putBucket(bucketName);
       console.log(result);
     } catch (err) {
@@ -87,9 +87,26 @@ export class OssService {
     }
   }
 
-  public async getImageList() {
-    const list = await this.client.list();
+  public async getFileList(prefix: string) {
+    const list = await this.client.list({
+      prefix,
+    });
     const images = list.objects;
     return images;
+  }
+
+  /**
+   * 删除文件
+   * @param filename
+   * @returns
+   */
+  public async delFile(filename: string) {
+    try {
+      // 填写Object完整路径。Object完整路径中不能包含Bucket名称。
+      const result = await this.client.delete(filename);
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Get,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -70,7 +71,7 @@ export class OssController {
     }
 
     return {
-      imageUrl: ossUrl,
+      row: ossUrl,
     };
   }
 
@@ -132,7 +133,7 @@ export class OssController {
     }
 
     return {
-      imageUrls: ossUrls,
+      rows: ossUrls,
     };
   }
 
@@ -151,15 +152,39 @@ export class OssController {
       images = files.map((file) => {
         return {
           name: file,
-          url: path.join(dirPath, file),
+          url:
+            this.configService.get('API_HOST') + '/' + path.join(dirPath, file),
         };
       });
     } else {
-      images = await this.ossService.getImageList();
+      images = await this.ossService.getFileList('image/');
     }
 
     return {
-      images,
+      rows: images,
     };
+  }
+
+  /**
+   * 删除图片
+   * @param filename
+   * @param local
+   * @returns
+   */
+  @Delete('/image')
+  async deleteImage(
+    @Body('filename') filename: string,
+    @Body('local') local: string = 'false',
+  ) {
+    if (local === 'true') {
+      const filePath = path.join(
+        this.configService.get('UPLOAD_IMAGE_PATH'),
+        filename,
+      );
+      await fsPm.unlink(filePath);
+      return null;
+    }
+    const result = await this.ossService.delFile(filename);
+    return null;
   }
 }
