@@ -158,12 +158,13 @@ export class OssController {
             this.configService.get('API_HOST') + '/' + path.join(dirPath, file),
         };
       });
-    }
-    images = await this.ossService.getFileList('image/');
-    if (keyword) {
-      images = images.filter((image) => {
-        return image.name.includes(keyword);
-      });
+    } else {
+      images = await this.ossService.getFileList('image/');
+      if (keyword) {
+        images = images.filter((image) => {
+          return image.name.includes(keyword);
+        });
+      }
     }
 
     return {
@@ -190,7 +191,7 @@ export class OssController {
       await fsPm.unlink(filePath);
       return null;
     }
-    const result = await this.ossService.delFile(filename);
+    await this.ossService.delFile(filename);
     return null;
   }
 }
