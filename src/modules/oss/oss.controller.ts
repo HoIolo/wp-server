@@ -160,11 +160,11 @@ export class OssController {
       });
     } else {
       images = await this.ossService.getFileList('image/');
-      if (keyword) {
-        images = images.filter((image) => {
-          return image.name.includes(keyword);
-        });
-      }
+    }
+    if (keyword) {
+      images = images.filter((image) => {
+        return image.name.includes(keyword);
+      });
     }
 
     return {
