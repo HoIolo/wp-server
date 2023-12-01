@@ -90,15 +90,18 @@ export class UserController {
     type: User,
   })
   async login(@Body() loginDTO: LoginDTO) {
-    const authResult = await this.authService.validateUser(
-      loginDTO.account,
-      loginDTO.password,
-    );
+    const { account, password, role } = loginDTO;
+    const authResult = await this.authService.validateUser(account, password);
     switch (authResult.code) {
       case 1:
         const { id } = authResult.user;
-        const profile = await this.userService.findProfileByUid(id);
-
+        const profile = await this.userService.findProfileByUid(id, role);
+        if (!profile) {
+          throw new HttpException(
+            { message: loginError.NOT_ACCOUNT, code: code.INVALID_PARAMS },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
         return await this.authService.login(profile);
       case 2:
         throw new HttpException(

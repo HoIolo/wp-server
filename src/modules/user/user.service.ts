@@ -63,16 +63,16 @@ export class UserService {
    * @param uid
    * @returns
    */
-  async findProfileByUid(user_id: number) {
-    console.log(user_id);
-
-    const result = await this.profilesRepository
+  async findProfileByUid(user_id: number, role?: number) {
+    const queryBuilder = this.profilesRepository
       .createQueryBuilder('profile')
       .leftJoinAndSelect('profile.user', 'user')
-      .where('user.id = :userId', { userId: user_id })
-      .getOne();
-
-    result.user = plainToClass(User, result.user);
+      .where('user.id = :userId', { userId: user_id });
+    if (role) {
+      queryBuilder.andWhere('user.role = :role', { role });
+    }
+    const result = await queryBuilder.getOne();
+    if (result) result.user = plainToClass(User, result.user);
     return result;
   }
 
