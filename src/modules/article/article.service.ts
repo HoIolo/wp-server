@@ -22,13 +22,25 @@ export class ArticleService {
    * @returns
    */
   async find(getArticleDto: GetArticleDTO) {
+    const { field, keyword, sorted = 'DESC' } = getArticleDto;
     const { skip, offset } = handlePage(getArticleDto);
-    return this.articleRepository
+    const queryBuild = this.articleRepository
       .createQueryBuilder()
       .skip(skip)
       .take(offset as number)
-      .orderBy('id', 'DESC')
-      .getManyAndCount();
+      .orderBy('id', sorted);
+    if (field === 'type' && keyword) {
+      const keywordArray = keyword.split(',');
+      for (const item of keywordArray) {
+        queryBuild.andWhere(`article.${field} = :type`, { type: item });
+      }
+    } else if (field && keyword) {
+      queryBuild.andWhere(`article.${field} like :keyword`, {
+        keyword: `%${keyword}%`,
+      });
+    }
+
+    return queryBuild.getManyAndCount();
   }
 
   /**

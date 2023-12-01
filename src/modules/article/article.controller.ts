@@ -18,6 +18,7 @@ import { GetArticleDTO } from './dto/getArticles.dto';
 import { CreateArticleDTO } from './dto/createArticle.dto';
 import {
   CREATE_ARTICLE_RESPONSE,
+  DEFAULT_RESOPNSE,
   DELETE_ARTICLE_RESPONSE,
   FIND_ARTICLE_RESPONSE,
 } from './constant';
@@ -39,6 +40,19 @@ export class ArticleController {
    */
   @Get('articles')
   async getArticle(@Query() getArticleDto: GetArticleDTO) {
+    const { field, sorted } = getArticleDto;
+    // 过滤无效数据
+    const sortedParamError = sorted && sorted !== 'DESC' && sorted !== 'ASC';
+    const fieldParamError = field && field !== 'title' && field !== 'type';
+    if (sortedParamError || fieldParamError) {
+      throw new HttpException(
+        {
+          message: DEFAULT_RESOPNSE.PARAMS_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const [rows, count] = await this.articleService.find(getArticleDto);
     return {
       rows,

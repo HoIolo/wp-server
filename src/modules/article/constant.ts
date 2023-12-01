@@ -23,6 +23,10 @@ export const FIND_ARTICLE_RESPONSE = {
   PARAMS_ERROR: '参数错误，不存在这篇文章！',
 };
 
+export const DEFAULT_RESOPNSE = {
+  PARAMS_ERROR: '参数错误，请重新提交！',
+};
+
 // 删除文章响应提示
 export const DELETE_ARTICLE_RESPONSE = {
   SUCCESS: '删除成功！',
