@@ -152,10 +152,12 @@ export class OssController {
       const dirPath = this.configService.get(UPLOAD_IMAGE_PATH);
       const files = await fsPm.readdir(dirPath);
       images = files.map((file) => {
+        const fileSize = fs.statSync(path.join(dirPath, file)).size;
         return {
           name: file,
           url:
             this.configService.get('API_HOST') + '/' + path.join(dirPath, file),
+          size: fileSize,
         };
       });
     } else {
