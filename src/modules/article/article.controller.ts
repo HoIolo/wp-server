@@ -118,7 +118,10 @@ export class ArticleController {
     }
 
     const result = await this.articleService.createArticle(createArticleDto);
-    if (result === null) {
+    const updateProfile = await this.userService.incrementArticleNum(
+      createArticleDto.author_id,
+    );
+    if (result === null || updateProfile.affected < 1) {
       throw new HttpException(
         {
           message: CREATE_ARTICLE_RESPONSE.FAIL,

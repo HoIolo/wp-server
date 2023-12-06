@@ -157,6 +157,15 @@ export class UserService {
   }
 
   /**
+   * 文章数量+1
+   * @param id
+   * @returns
+   */
+  incrementArticleNum(id: number | string) {
+    return this.profilesRepository.increment({ id: +id }, 'article_num', 1);
+  }
+
+  /**
    * 匹配角色
    * @param _role
    * @param uid
