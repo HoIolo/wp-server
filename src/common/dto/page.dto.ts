@@ -16,4 +16,9 @@ export class PageDTO {
   @IsString()
   @ApiProperty()
   readonly keyword: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  readonly field: string;
 }

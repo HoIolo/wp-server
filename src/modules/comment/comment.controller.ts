@@ -25,6 +25,7 @@ import { PageDTO } from 'src/common/dto/page.dto';
 import { ReplyCommentDto } from '../article/dto/replyComment.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { LikesDTO } from './dto/likes.dto';
+import { GetCommentDto } from './dto/getComment.dto';
 
 @ApiTags('comment')
 @Controller()
@@ -34,12 +35,28 @@ export class CommentController {
 
   /**
    * 获取所有评论（分页）
-   * @param pageDto
+   * @param getCommentDto
    * @returns
    */
   @Get('comments')
-  async getComments(@Query() pageDto: PageDTO) {
-    const [rows, count] = await this.commentService.findAllByPage(pageDto);
+  async getComments(@Query() getCommentDto: GetCommentDto) {
+    let { sorted } = getCommentDto;
+    if (!sorted) {
+      sorted = 'DESC';
+      getCommentDto.sorted = sorted;
+    }
+    if (sorted.toUpperCase() !== 'DESC' && sorted.toUpperCase() !== 'ASC') {
+      throw new HttpException(
+        {
+          message: code.INVALID_PARAMS,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const [rows, count] =
+      await this.commentService.findAllByPage(getCommentDto);
 
     return {
       rows,

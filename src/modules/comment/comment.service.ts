@@ -11,6 +11,7 @@ import { ReplyCommentDto } from '../article/dto/replyComment.dto';
 import { Reply } from './entity/reply.entity';
 import { plainToClass } from 'class-transformer';
 import { LikesDTO } from './dto/likes.dto';
+import { GetCommentDto } from './dto/getComment.dto';
 
 @Injectable()
 export class CommentService {
@@ -28,18 +29,40 @@ export class CommentService {
 
   /**
    * 查询所以评论（分页）
-   * @param pageDto
+   * @param getCommentDto
    * @returns
    */
-  async findAllByPage(pageDto: PageDTO) {
-    const { skip, offset } = handlePage(pageDto);
+  async findAllByPage(getCommentDto: GetCommentDto) {
+    const { skip, offset } = handlePage(getCommentDto);
+    const { sorted, keyword, field } = getCommentDto;
 
-    return this.commentRepository
+    const queryBuilder = this.commentRepository
       .createQueryBuilder('comment')
       .skip(skip)
       .take(offset as number)
       .leftJoinAndSelect('comment.replys', 'replys')
-      .getManyAndCount();
+      .leftJoinAndSelect('comment.user', 'user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .orderBy('comment.createTime', sorted);
+
+    if (keyword && field) {
+      queryBuilder.andWhere(`comment.${field} like :keyword`, {
+        keyword: `%${keyword}%`,
+      });
+    }
+
+    const [rows, count] = await queryBuilder.getManyAndCount();
+
+    const newRows = rows.map((row) => {
+      row.user = plainToClass(User, row.user);
+      row.replys?.map((reply) => {
+        reply.user = plainToClass(User, reply.user);
+        return reply;
+      });
+      return row;
+    });
+
+    return [newRows, count];
   }
 
   /**
