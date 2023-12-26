@@ -58,6 +58,7 @@
     "socket.io": "^4.7.2",
     "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.17",
+    "upyun": "^3.4.6",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1"
   },
@@ -73,6 +74,7 @@
     "@types/passport-jwt": "^3.0.10",
     "@types/passport-local": "^1.0.36",
     "@types/supertest": "^2.0.14",
+    "@types/upyun": "^3.4.3",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
     "commitizen": "^4.3.0",
