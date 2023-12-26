@@ -95,7 +95,21 @@ export class UpYunService implements CommonOssService {
   public async getFileList(uri: string) {
     const list = await this.client.listDir(uri);
     const files = (list as upyun.listDirResponse).files;
-    return files;
+    const newFiles = files.map((item) => {
+      const url =
+        this.configService.get('UPYUN_ACESS_URL') +
+        '/' +
+        this.configService.get('OSS_UPLOAD_IMAGE_PATH') +
+        item.name;
+      return {
+        name: item.name,
+        size: item.size,
+        type: item.type,
+        time: item.time,
+        url,
+      };
+    });
+    return newFiles;
   }
 
   /**
