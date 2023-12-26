@@ -14,7 +14,6 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import multer = require('multer');
-import { OssService } from './oss.service';
 import { code, roles } from 'src/constant';
 import { Role } from 'src/common/decorator/role.decorator';
 import { ConfigService } from '@nestjs/config';
@@ -23,6 +22,7 @@ import fs = require('fs');
 import fsPm = require('fs/promises');
 import { UPLOAD_RESPONSE } from './constant';
 import { GetImageDto } from './dto/getImageDto';
+import { UpYunService } from './upyun/upyun.service';
 
 @ApiBearerAuth() // Swagger 的 JWT 验证
 @ApiTags('oss')
@@ -30,7 +30,7 @@ import { GetImageDto } from './dto/getImageDto';
 @Role(roles.VISITOR)
 export class OssController {
   constructor(
-    private readonly ossService: OssService,
+    private readonly ossService: UpYunService,
     private readonly configService: ConfigService,
   ) {}
   /**

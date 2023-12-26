@@ -1,11 +1,12 @@
 import * as OSS from 'ali-oss';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UPLOAD_RESPONSE } from './constant';
+import { UPLOAD_RESPONSE } from '../constant';
 import { code } from 'src/constant';
+import { CommonOssService } from '../interface/common.service';
 
 @Injectable()
-export class OssService {
+export class AliService implements CommonOssService {
   private client: any;
   public constructor(private configService: ConfigService) {
     this.client = new OSS({

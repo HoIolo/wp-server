@@ -1,13 +1,14 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { OssService } from './oss.service';
 import { OssController } from './oss.controller';
 import { ConfigModule } from '@nestjs/config';
 import { FileUploadMiddleware } from 'src/common/middleware/fileupload.middleware';
+import { UpYunService } from './upyun/upyun.service';
+import { AliService } from './ali/ali.service';
 
 @Module({
   imports: [ConfigModule],
   controllers: [OssController],
-  providers: [OssService],
+  providers: [AliService, UpYunService],
 })
 export class OssModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
