@@ -15,7 +15,7 @@ import { Role } from 'src/common/decorator/role.decorator';
 import { AIService } from './ai.service';
 
 @Controller()
-@Role(roles.VISITOR)
+@Role(roles.LOGGED)
 export class AIController {
   constructor(private readonly aiService: AIService) {}
 
