@@ -18,6 +18,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { CacheModule } from './cache.module';
 import { LoggerModule } from './modules/logger/logger.module';
 import { AllExceptionFilter } from './common/filter/all-exception.filter';
+import { AIModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AllExceptionFilter } from './common/filter/all-exception.filter';
     OssModule,
     CommentModule,
     ChatModule,
+    AIModule,
   ],
   controllers: [AppController],
   providers: [
