@@ -65,8 +65,17 @@ export class ArticleController {
    * @returns
    */
   @Get('/article/timeline')
-  async getArticleTimeline() {
-    const [rows, count] = await this.articleService.findTimeLine();
+  async getArticleTimeline(@Query('order') order: 'DESC' | 'ASC' = 'ASC') {
+    if (order !== 'DESC' && order !== 'ASC') {
+      throw new HttpException(
+        {
+          message: DEFAULT_RESOPNSE.PARAMS_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const [rows, count] = await this.articleService.findTimeLine(order);
     return {
       rows,
       count,

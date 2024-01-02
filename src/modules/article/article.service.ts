@@ -123,13 +123,13 @@ export class ArticleService {
    * 获取时间轴
    * @param pageDto
    */
-  async findTimeLine() {
+  async findTimeLine(order: 'DESC' | 'ASC') {
     const data = await this.articleRepository
       .createQueryBuilder('article')
       .select('YEAR(publish_date)', 'year')
       .addSelect('MONTH(publish_date)', 'month')
       .groupBy('year, month')
-      .orderBy('month', 'DESC')
+      .orderBy('month', order)
       .getRawMany();
 
     for (const item of data) {
