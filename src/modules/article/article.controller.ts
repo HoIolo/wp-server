@@ -5,6 +5,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Inject,
   Param,
   ParseIntPipe,
   Post,
@@ -23,14 +24,20 @@ import {
   FIND_ARTICLE_RESPONSE,
 } from './constant';
 import { UserService } from '../user/user.service';
+import { Redis } from 'ioredis';
+import { isEmpty } from 'src/utils/common';
 
 @ApiTags('article')
 @Controller()
 @Role(roles.VISITOR)
 export class ArticleController {
+  private readonly cacheExpireTime: number = 60 * 60 * 24;
+
   constructor(
     private readonly articleService: ArticleService,
     private readonly userService: UserService,
+    @Inject('REDIS_CLIENT')
+    private readonly redis: Redis,
   ) {}
 
   /**
@@ -40,7 +47,7 @@ export class ArticleController {
    */
   @Get('articles')
   async getArticle(@Query() getArticleDto: GetArticleDTO) {
-    const { field, sorted } = getArticleDto;
+    const { field, sorted, page, offset, keyword } = getArticleDto;
     // 过滤无效数据
     const sortedParamError = sorted && sorted !== 'DESC' && sorted !== 'ASC';
     const fieldParamError = field && field !== 'title' && field !== 'type';
@@ -53,7 +60,22 @@ export class ArticleController {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    // 缓存文章数据
+    const cacheKey = `articles_${sorted}_${page}_${offset}`;
+    const articleCache = await this.redis.get(cacheKey);
+    // 如果缓存中存在且没有关键字查询，则直接返回缓存
+    if (articleCache && isEmpty(keyword)) {
+      return JSON.parse(articleCache);
+    }
     const [rows, count] = await this.articleService.find(getArticleDto);
+    // 关键词查询不缓存
+    if (isEmpty(keyword))
+      this.redis.setex(
+        cacheKey,
+        this.cacheExpireTime,
+        JSON.stringify({ rows, count }),
+      );
     return {
       rows,
       count,
@@ -75,7 +97,19 @@ export class ArticleController {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    // 存在缓存直接返回
+    const cacheKey = `articles_timeline_${order}`;
+    const timelineCache = await this.redis.get(cacheKey);
+    if (timelineCache) {
+      return JSON.parse(timelineCache);
+    }
     const [rows, count] = await this.articleService.findTimeLine(order);
+    this.redis.setex(
+      cacheKey,
+      this.cacheExpireTime,
+      JSON.stringify({ rows, count }),
+    );
     return {
       rows,
       count,
@@ -89,6 +123,11 @@ export class ArticleController {
    */
   @Get('article/:id')
   async getArticleById(@Param('id', ParseIntPipe) id: number) {
+    const cacheKey = `article_${id}`;
+    const articleCache = await this.redis.get(cacheKey);
+    if (articleCache) {
+      return JSON.parse(articleCache);
+    }
     const article = await this.articleService.findById(id);
     if (!article) {
       throw new HttpException(
@@ -99,6 +138,12 @@ export class ArticleController {
         HttpStatus.BAD_REQUEST,
       );
     }
+    this.redis.setex(
+      cacheKey,
+      this.cacheExpireTime,
+      JSON.stringify({ row: article }),
+    );
+
     return {
       row: article,
     };
@@ -139,6 +184,11 @@ export class ArticleController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } else {
+      // 成功删除文章后，将文章的缓存删除
+      const articleKeysMatch = 'articles*';
+      const articleKeys = await this.redis.keys(articleKeysMatch);
+      this.redis.del(articleKeys);
+
       return {
         message: CREATE_ARTICLE_RESPONSE.SUCCESS,
       };
@@ -163,6 +213,10 @@ export class ArticleController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+    // 成功删除文章后，将文章的缓存删除
+    const articleKeysMatch = 'articles*';
+    const articleKeys = await this.redis.keys(articleKeysMatch);
+    this.redis.del(articleKeys);
 
     return {
       row: result,

@@ -5,11 +5,13 @@ import { ArticleService } from './article.service';
 import { Article } from './entity/article.entity';
 import { User } from '../user/entity/user.entity';
 import { UserModule } from '../user/user.module';
+import { CacheModule } from 'src/cache.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Article, User]),
     forwardRef(() => UserModule),
+    CacheModule,
   ],
   controllers: [ArticleController],
   providers: [ArticleService],
