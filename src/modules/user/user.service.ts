@@ -166,6 +166,38 @@ export class UserService {
   }
 
   /**
+   * 按照用户名查询密码
+   * @param userName
+   * @returns
+   */
+  findPwdByUserName(userName: string) {
+    return this.usersRepository.findOne({
+      where: {
+        account: userName,
+      },
+      select: ['password', 'salt', 'email'],
+    });
+  }
+
+  /**
+   * 根据用户名修改密码
+   * @param userName
+   * @param newPwd
+   * @param salt
+   * @returns
+   */
+  updatePwdByUserName(userName: string, newPwd: string, salt: string) {
+    return this.usersRepository.update(
+      {
+        account: userName,
+      },
+      {
+        password: encryptPassword(newPwd, salt),
+      },
+    );
+  }
+
+  /**
    * 匹配角色
    * @param _role
    * @param uid

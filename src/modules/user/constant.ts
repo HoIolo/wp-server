@@ -8,6 +8,17 @@ export enum registerError {
   EMAIL_CODE_ERROR = '验证码错误',
 }
 
+export enum updatePwdError {
+  CHECKCODE_ERROR = '邮箱验证失败,验证码错误！',
+  OLDPWD_ERROR = '旧密码错误！',
+  NEWPWD_SAMILE_OLDPWD = '新密码不能与旧密码相同',
+  USER_NOT_FOND = '用户不存在',
+}
+
+export enum updatePwdMessage {
+  SUCCESS = '修改成功！',
+}
+
 export enum updateResponseMessage {
   UPDATE_ERROR = '修改资料失败，请稍后再试',
   UPDATE_SUUCCESS = '修改成功！',

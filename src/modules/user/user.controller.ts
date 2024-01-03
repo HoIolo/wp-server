@@ -26,6 +26,8 @@ import {
   SYSTEM_ERROR,
   updateResponseMessage,
   USER_NOT_LOGIN,
+  updatePwdError,
+  updatePwdMessage,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code, roles } from 'src/constant';
@@ -35,6 +37,9 @@ import { Role } from 'src/common/decorator/role.decorator';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './entity/user.entity';
 import { Redis } from 'ioredis';
+import { UpdatePwdDto } from './dto/updatePwd.dto';
+import { isEmpty } from 'src/utils/common';
+import { encryptPassword } from 'src/utils/cryptogram';
 
 @ApiTags('user')
 @Controller()
@@ -208,6 +213,81 @@ export class UserController {
 
     return {
       message: updateResponseMessage.UPDATE_SUUCCESS,
+    };
+  }
+
+  /**
+   * 忘记密码，修改用户密码
+   * @param updatePwdDto
+   * @returns
+   */
+  @Patch('/user/password')
+  async updatePassword(@Body() updatePwdDto: UpdatePwdDto) {
+    const { oldPassword, newPassword, checkCode, username } = updatePwdDto;
+    const user = await this.userService.findPwdByUserName(username);
+    // 用户不存在
+    if (isEmpty(user)) {
+      throw new HttpException(
+        {
+          message: updatePwdError.USER_NOT_FOND,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const codeCache = await this.redis.get(user.email);
+    // 验证码错误
+    if (checkCode !== codeCache) {
+      throw new HttpException(
+        {
+          message: updatePwdError.CHECKCODE_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // 旧密码错误
+    if (encryptPassword(oldPassword, user.salt) !== user.password) {
+      throw new HttpException(
+        {
+          message: updatePwdError.OLDPWD_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // 新老密码相同
+    if (encryptPassword(newPassword, user.salt) === user.password) {
+      throw new HttpException(
+        {
+          message: updatePwdError.NEWPWD_SAMILE_OLDPWD,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const updateResult = await this.userService.updatePwdByUserName(
+      username,
+      newPassword,
+      user.salt,
+    );
+    // 更新影响行数为0，参数错误
+    if (updateResult.affected < 1) {
+      throw new HttpException(
+        {
+          message: updatePwdError.USER_NOT_FOND,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // 修改成功，删除验证码缓存
+    const checkCodeCache = await this.redis.get(user.email);
+    // 验证码缓存存在，删除验证码缓存
+    if (!isEmpty(checkCodeCache)) this.redis.del(user.email);
+    return {
+      row: updateResult,
+      message: updatePwdMessage.SUCCESS,
     };
   }
 }
