@@ -203,11 +203,11 @@ export class UserService {
    * @param uid
    * @returns
    */
-  async matchRole(_role: number, uid: number) {
+  async matchRole(_role: number, uid: number): Promise<boolean> {
     const user = await this.usersRepository.findOneBy({
       id: uid,
     });
-    const { role } = user;
-    return role >= _role;
+    const role = user && user.role;
+    return role ? role >= _role : false;
   }
 }
