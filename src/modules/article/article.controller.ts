@@ -187,7 +187,7 @@ export class ArticleController {
       // 成功删除文章后，将文章的缓存删除
       const articleKeysMatch = 'articles*';
       const articleKeys = await this.redis.keys(articleKeysMatch);
-      this.redis.del(articleKeys);
+      if (articleKeys && articleKeys.length > 0) this.redis.del(articleKeys);
 
       return {
         message: CREATE_ARTICLE_RESPONSE.SUCCESS,
@@ -216,7 +216,7 @@ export class ArticleController {
     // 成功删除文章后，将文章的缓存删除
     const articleKeysMatch = 'articles*';
     const articleKeys = await this.redis.keys(articleKeysMatch);
-    this.redis.del(articleKeys);
+    if (articleKeys && articleKeys.length > 0) this.redis.del(articleKeys);
 
     return {
       row: result,
