@@ -27,7 +27,6 @@ import { UpYunService } from './upyun/upyun.service';
 @ApiBearerAuth() // Swagger 的 JWT 验证
 @ApiTags('oss')
 @Controller()
-@Role(roles.VISITOR)
 export class OssController {
   constructor(
     private readonly ossService: UpYunService,
@@ -38,6 +37,7 @@ export class OssController {
    * @param body
    */
   @Post('image')
+  @Role(roles.LOGGED)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: multer.diskStorage({
@@ -82,6 +82,7 @@ export class OssController {
    * @returns
    */
   @Post('images')
+  @Role(roles.LOGGED)
   @UseInterceptors(FilesInterceptor('files', 5))
   async uploadImages(
     @UploadedFiles() files: Express.Multer.File[],
@@ -144,6 +145,7 @@ export class OssController {
    * @returns
    */
   @Get('images')
+  @Role(roles.ADMIN)
   async getImages(@Query() getImageDto: GetImageDto) {
     const { local = 'false', keyword } = getImageDto;
     let images = null;
@@ -181,6 +183,7 @@ export class OssController {
    * @returns
    */
   @Delete('/image')
+  @Role(roles.ADMIN)
   async deleteImage(
     @Body('filename') filename: string,
     @Body('local') local: string = 'false',
