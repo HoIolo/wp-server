@@ -184,7 +184,7 @@ export class ArticleController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } else {
-      // 成功删除文章后，将文章的缓存删除
+      // 成功发布文章后，将文章的缓存删除
       const articleKeysMatch = 'articles*';
       const articleKeys = await this.redis.keys(articleKeysMatch);
       if (articleKeys && articleKeys.length > 0) this.redis.del(articleKeys);
@@ -204,13 +204,13 @@ export class ArticleController {
   @Role(roles.ADMIN)
   async deleteArticle(@Param('id', ParseIntPipe) id: number) {
     const result = await this.articleService.deleteArticle(id);
-    if (result === null) {
+    if (result.affected < 1) {
       throw new HttpException(
         {
-          message: DELETE_ARTICLE_RESPONSE.FAIL,
-          code: code.SYSTEM_ERROR,
+          message: DELETE_ARTICLE_RESPONSE.PARAMS_ERROR,
+          code: code.INVALID_PARAMS,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     }
     // 成功删除文章后，将文章的缓存删除
