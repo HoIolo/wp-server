@@ -68,8 +68,8 @@ export class UserController {
    * @param account
    * @returns
    */
-  @Get('/user/info')
-  async getUserByAccount(@Query('account') account: string) {
+  @Get('/user/:account')
+  async getUserByAccount(@Param('account') account: string) {
     // 参数错误
     if (isEmpty(account)) {
       throw new HttpException(
