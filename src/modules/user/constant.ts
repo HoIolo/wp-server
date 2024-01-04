@@ -4,6 +4,12 @@ export enum loginError {
   ACCOUNT_EXIST = '该账号已经存在',
 }
 
+export enum GetUserResponseMessage {
+  USER_NOT_FOND = '用户不存在',
+  SUCCESS = '获取用户成功',
+  PARAMS_ERROR = '参数错误',
+}
+
 export enum registerError {
   EMAIL_CODE_ERROR = '验证码错误',
 }

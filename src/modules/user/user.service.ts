@@ -21,6 +21,19 @@ export class UserService {
   ) {}
 
   /**
+   * 根据用户账号查询用户
+   * @param account
+   */
+  findUserByAccount(account: string) {
+    return this.usersRepository.findOne({
+      where: {
+        account,
+      },
+      select: ['id', 'account', 'email', 'role'],
+    });
+  }
+
+  /**
    * 查询用户，支持分页
    * @param queryDTO
    * @returns

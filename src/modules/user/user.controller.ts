@@ -28,6 +28,7 @@ import {
   USER_NOT_LOGIN,
   updatePwdError,
   updatePwdMessage,
+  GetUserResponseMessage,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code, roles } from 'src/constant';
@@ -59,6 +60,37 @@ export class UserController {
     return {
       rows,
       count,
+    };
+  }
+
+  /**
+   *  根据用户账号查询用户信息
+   * @param account
+   * @returns
+   */
+  @Get('/user/info')
+  async getUserByAccount(@Query('account') account: string) {
+    // 参数错误
+    if (isEmpty(account)) {
+      throw new HttpException(
+        {
+          message: GetUserResponseMessage.PARAMS_ERROR,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const user = await this.userService.findUserByAccount(account);
+    // 用户不存在
+    if (isEmpty(user)) {
+      throw new HttpException(
+        {
+          message: GetUserResponseMessage.USER_NOT_FOND,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return {
+      row: user,
     };
   }
 
