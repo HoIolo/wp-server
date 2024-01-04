@@ -4,6 +4,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Inject,
   Post,
 } from '@nestjs/common';
@@ -12,12 +14,25 @@ import { AppService } from './app.service';
 import { Role } from './common/decorator/role.decorator';
 import { ApiProperty, ApiTags } from '@nestjs/swagger';
 import Redis from 'ioredis';
+import { isEmpty } from './utils/common';
+import { code } from 'src/constant';
 
 class EmailDTO {
   @IsNotEmpty()
   @IsEmail()
   @ApiProperty()
   email: string;
+}
+
+class CheckEmailDTO {
+  @IsNotEmpty()
+  @IsEmail()
+  @ApiProperty()
+  email: string;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  checkCode: string;
 }
 
 @ApiTags('')
@@ -52,5 +67,41 @@ export class AppController {
     return {
       message: '发送失败，请稍后再试',
     };
+  }
+
+  /**
+   * 验证邮箱是否通过
+   * @param checkEmailDTO
+   * @returns
+   */
+  @Post('/email/check')
+  async emailCheck(@Body() checkEmailDTO: CheckEmailDTO) {
+    const { email, checkCode } = checkEmailDTO;
+    const checkCodeCache = await this.redis.get(email);
+
+    // 验证码缓存为空
+    if (isEmpty(checkCodeCache)) {
+      throw new HttpException(
+        {
+          message: '验证码已过期！',
+          status: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // 验证码错误
+    if (checkCodeCache !== checkCode) {
+      throw new HttpException(
+        {
+          message: '验证码错误！',
+          status: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    } else {
+      return {
+        message: '验证成功！',
+      };
+    }
   }
 }
