@@ -35,6 +35,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayDisconnect {
     if (leaveUser) {
       this.chatService.delOnlineUser(leaveUser);
       this.server.emit('userFadeOut', leaveUser);
+      this.chatService.onlineUsers.trigger = 'fadeOut';
       this.server.emit('users', this.chatService.onlineUsers);
       console.log(leaveUser?.onlineUser.name, '断开连接');
     }
@@ -50,8 +51,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayDisconnect {
       onlineUser: body.user,
       status: '在线',
     });
+    this.chatService.onlineUsers.trigger = 'fadeIn';
+    // 找到当前用户为传入的用户
     onlineUsers.currentUser = onlineUsers.userQueue.find(
-      (item) => item.id === client.id,
+      (item) => item.onlineUser.id === body.user.id,
     );
     this.server.emit('users', onlineUsers);
     this.server.emit('chartMsg', this.chatService.chartMessageList);

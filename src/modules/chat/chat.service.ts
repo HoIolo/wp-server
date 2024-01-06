@@ -16,6 +16,7 @@ interface ChartMessage {
 interface OnlineUsers {
   userQueue: Array<OnlineUser>;
   currentUser: OnlineUser;
+  trigger: 'fadeIn' | 'fadeOut';
 }
 
 @Injectable()
@@ -28,6 +29,7 @@ export class ChatService {
     this.onlineUsers = {
       userQueue: [],
       currentUser: null,
+      trigger: 'fadeIn',
     };
   }
 
@@ -62,7 +64,7 @@ export class ChatService {
    */
   delOnlineUser(leaveUser: OnlineUser) {
     if (!leaveUser) return;
-    this.onlineUsers.userQueue = this.onlineUsers.userQueue.filter((item) => {
+    this.onlineUsers.userQueue = this.onlineUsers.userQueue?.filter((item) => {
       return item.onlineUser.id !== leaveUser.onlineUser.id;
     });
   }
