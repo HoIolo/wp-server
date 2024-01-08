@@ -1,3 +1,5 @@
+import { TagsService } from './../tags/tags.service';
+import { UserService } from './../user/user.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { GetArticleDTO } from './dto/getArticles.dto';
 import { handlePage } from 'src/utils/common';
@@ -14,6 +16,8 @@ export class ArticleService {
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
     private dataSource: DataSource,
+    private readonly userService: UserService,
+    private readonly tagsService: TagsService,
   ) {}
 
   /**
@@ -75,7 +79,7 @@ export class ArticleService {
    * @returns
    */
   async createArticle(createArticleDto: CreateArticleDTO) {
-    const { author_id } = createArticleDto;
+    const { author_id, tags } = createArticleDto;
     const article = new Article();
     const user = new User();
     user.id = author_id as number;
@@ -90,6 +94,17 @@ export class ArticleService {
     try {
       const saveArticle = queryRunner.manager.save(mergeArticle);
       if (!saveArticle) {
+        return null;
+      }
+      // 用户数 + 1
+      const updateArticleResult =
+        await this.userService.incrementArticleNum(author_id);
+      if (updateArticleResult.affected < 1) {
+        return null;
+      }
+      // 标签数 + 1
+      const updateTagsResult = await this.tagsService.incrementTagsByNum(tags);
+      if (updateTagsResult.affected < 1) {
         return null;
       }
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Tags } from './entity/tags.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { handlePage } from 'src/utils/common';
@@ -73,5 +73,23 @@ export class TagsService {
    */
   deleteTag(id: number) {
     return this.tagsRepository.softDelete(id);
+  }
+
+  /**
+   * 根据标签名称数组查询标签
+   * @param tags
+   * @returns
+   */
+  findByTagNameArray(tags: string[]) {
+    return this.tagsRepository.find({ where: { tagName: In(tags) } });
+  }
+
+  /**
+   * 增加标签文章数
+   * @param tags
+   * @returns
+   */
+  incrementTagsByNum(tags: string[]) {
+    return this.tagsRepository.increment({ tagName: In(tags) }, 'byNum', 1);
   }
 }

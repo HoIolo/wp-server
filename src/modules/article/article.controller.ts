@@ -26,6 +26,7 @@ import {
 import { UserService } from '../user/user.service';
 import { Redis } from 'ioredis';
 import { isEmpty } from 'src/utils/common';
+import { TagsService } from '../tags/tags.service';
 
 @ApiTags('article')
 @Controller()
@@ -38,6 +39,7 @@ export class ArticleController {
     private readonly userService: UserService,
     @Inject('REDIS_CLIENT')
     private readonly redis: Redis,
+    private readonly tagsService: TagsService,
   ) {}
 
   /**
@@ -157,9 +159,8 @@ export class ArticleController {
   @Post('article')
   @Role(roles.LOGGED)
   async createArticle(@Body() createArticleDto: CreateArticleDTO) {
-    const user = await this.userService.findProfileByUid(
-      createArticleDto.author_id as number,
-    );
+    const { author_id, tags } = createArticleDto;
+    const user = await this.userService.findProfileByUid(author_id as number);
     // 提供作者id为错误的
     if (!user) {
       throw new HttpException(
@@ -170,12 +171,20 @@ export class ArticleController {
         HttpStatus.BAD_REQUEST,
       );
     }
-
+    // 验证标签是否存在
+    const tagsList = await this.tagsService.findByTagNameArray(tags);
+    if (tagsList.length !== tags.length) {
+      // 标签有一个不存在，或者都不存在
+      throw new HttpException(
+        {
+          message: CREATE_ARTICLE_RESPONSE.TAGS_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const result = await this.articleService.createArticle(createArticleDto);
-    const updateProfile = await this.userService.incrementArticleNum(
-      createArticleDto.author_id,
-    );
-    if (result === null || updateProfile.affected < 1) {
+    if (result === null) {
       throw new HttpException(
         {
           message: CREATE_ARTICLE_RESPONSE.FAIL,

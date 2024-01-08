@@ -32,4 +32,7 @@ export class Article extends BaseEntity {
 
   @Column({ type: 'datetime' })
   publish_date: string;
+
+  @Column({ type: 'simple-array' })
+  tags: string[];
 }

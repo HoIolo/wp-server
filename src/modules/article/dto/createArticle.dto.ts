@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsNotEmpty,
   IsString,
   IsUrl,
@@ -41,4 +42,9 @@ export class CreateArticleDTO {
   @IsNotEmpty()
   @ApiProperty()
   content: string;
+
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty()
+  tags: string[];
 }
