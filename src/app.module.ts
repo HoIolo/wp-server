@@ -19,6 +19,7 @@ import { CacheModule } from './cache.module';
 import { LoggerModule } from './modules/logger/logger.module';
 import { AllExceptionFilter } from './common/filter/all-exception.filter';
 import { AIModule } from './modules/ai/ai.module';
+import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AIModule } from './modules/ai/ai.module';
     CommentModule,
     ChatModule,
     AIModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [
