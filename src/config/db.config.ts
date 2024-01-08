@@ -15,5 +15,5 @@ export const dbFactory = (config: ConfigService) =>
     timezone: '+08:00',
     logger:
       config.get('NODE_ENV') === 'development' ? new DatabaseLogger() : false,
-    synchronize: true,
+    synchronize: config.get('NODE_ENV') === 'development' ? true : false,
   }) as TypeOrmModuleOptions;
