@@ -58,6 +58,7 @@ export class TagsController {
    * @returns
    */
   @Post('/tag')
+  @Role(roles.ADMIN)
   async createTag(@Body() createTagDto: CreateTagDto) {
     const { tagName } = createTagDto;
     const findTag = await this.tagsService.findOneByIdOrName({ name: tagName });
@@ -85,6 +86,7 @@ export class TagsController {
    * @returns
    */
   @Patch('/tag/:id')
+  @Role(roles.ADMIN)
   async updateTag(
     @Body() updateTagDto: UpdateTagDto,
     @Param('id', ParseIntPipe) id: number,
@@ -123,6 +125,7 @@ export class TagsController {
    * @returns
    */
   @Delete('/tag/:id')
+  @Role(roles.ADMIN)
   async delTag(@Param('id', ParseIntPipe) id: number) {
     const findTag = await this.tagsService.findOneByIdOrName({ id });
     if (!findTag) {

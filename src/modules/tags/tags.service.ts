@@ -34,7 +34,7 @@ export class TagsService {
       .take(offset as number)
       .orderBy('id', sorted);
     if (field && keyword) {
-      queryBuild.andWhere(`article.${field} like :keyword`, {
+      queryBuild.andWhere(`tags.${field} like :keyword`, {
         keyword: `%${keyword}%`,
       });
     }

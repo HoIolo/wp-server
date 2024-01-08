@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateArticleDTO } from './dto/createArticle.dto';
 import * as dayjs from 'dayjs';
 import { User } from '../user/entity/user.entity';
+import { Tags } from '../tags/entity/tags.entity';
 
 @Injectable()
 export class ArticleService {
@@ -78,13 +79,14 @@ export class ArticleService {
    * @param createArticleDto
    * @returns
    */
-  async createArticle(createArticleDto: CreateArticleDTO) {
+  async createArticle(createArticleDto: CreateArticleDTO, tagsList: Tags[]) {
     const { author_id, tags } = createArticleDto;
     const article = new Article();
     const user = new User();
     user.id = author_id as number;
     article.publish_date = dayjs().format('YYYY-MM-DD HH:mm:ss');
     article.author = user;
+    article.tagsEntity = tagsList;
     const mergeArticle = Object.assign(article, createArticleDto) as Article;
 
     const queryRunner = this.dataSource.createQueryRunner();

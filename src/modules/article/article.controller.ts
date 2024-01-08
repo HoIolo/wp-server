@@ -183,7 +183,10 @@ export class ArticleController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const result = await this.articleService.createArticle(createArticleDto);
+    const result = await this.articleService.createArticle(
+      createArticleDto,
+      tagsList,
+    );
     if (result === null) {
       throw new HttpException(
         {

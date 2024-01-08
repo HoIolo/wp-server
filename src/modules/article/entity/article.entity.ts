@@ -1,6 +1,15 @@
 import { BaseEntity } from 'src/common/entity/base.entity';
+import { Tags } from 'src/modules/tags/entity/tags.entity';
 import { User } from 'src/modules/user/entity/user.entity';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+} from 'typeorm';
 
 @Entity()
 export class Article extends BaseEntity {
@@ -35,4 +44,12 @@ export class Article extends BaseEntity {
 
   @Column({ type: 'simple-array' })
   tags: string[];
+
+  @ManyToMany(() => Tags, (tags) => tags.byArticles)
+  @JoinTable({
+    name: 'article_tags',
+    joinColumn: { name: 'article_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tagsEntity: Tags[];
 }
