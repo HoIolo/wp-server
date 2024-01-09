@@ -21,12 +21,14 @@ import {
   CREATE_ARTICLE_RESPONSE,
   DEFAULT_RESOPNSE,
   DELETE_ARTICLE_RESPONSE,
+  FIND_ARTICLE_BY_TAG_ID_RESPONSE,
   FIND_ARTICLE_RESPONSE,
 } from './constant';
 import { UserService } from '../user/user.service';
 import { Redis } from 'ioredis';
-import { isEmpty } from 'src/utils/common';
+import { handlePage, isEmpty } from 'src/utils/common';
 import { TagsService } from '../tags/tags.service';
+import { GetArticleByTagIdDto } from './dto/getArticleByTagId.dto';
 
 @ApiTags('article')
 @Controller()
@@ -112,6 +114,41 @@ export class ArticleController {
       this.cacheExpireTime,
       JSON.stringify({ rows, count }),
     );
+    return {
+      rows,
+      count,
+    };
+  }
+
+  /**
+   * 根据标签id获取文章信息
+   * @param tagid
+   * @param order
+   * @returns
+   */
+  @Get('/article/tag/:tagid')
+  async getArticleByTagId(
+    @Param('tagid', ParseIntPipe) tagid: number,
+    @Query() getArticleByTagDto: GetArticleByTagIdDto,
+  ) {
+    const { order } = getArticleByTagDto;
+    const { skip, offset } = handlePage(getArticleByTagDto);
+    const [rows, count] = await this.articleService.findArticleByTagId(
+      tagid,
+      order,
+      skip,
+      +offset,
+    );
+    if (count < 1) {
+      // 未查询到文章数据
+      throw new HttpException(
+        {
+          message: FIND_ARTICLE_BY_TAG_ID_RESPONSE.TAGID_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return {
       rows,
       count,

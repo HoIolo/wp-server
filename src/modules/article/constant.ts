@@ -19,6 +19,13 @@ export const CREATE_ARTICLE_RESPONSE = {
   TAGS_ERROR: '参数错误，不存在某个或者全部标签！',
 };
 
+// 根据标签id查询文章响应
+export const FIND_ARTICLE_BY_TAG_ID_RESPONSE = {
+  SUCCESS: '查询成功！',
+  FAIL: '查询失败，系统繁忙，请稍后再试！',
+  TAGID_ERROR: '参数错误，不存在这个标签！',
+};
+
 // 查询文章响应提示
 export const FIND_ARTICLE_RESPONSE = {
   PARAMS_ERROR: '参数错误，不存在这篇文章！',

@@ -75,6 +75,31 @@ export class ArticleService {
   }
 
   /**
+   * 根据标签ID查询文章
+   * @param tag_id
+   * @param order
+   * 可选 DESC 或者 ASC, 默认为 DESC
+   * @param skip
+   * @param offset
+   * @returns
+   */
+  findArticleByTagId(
+    tag_id: number,
+    order: 'DESC' | 'ASC' = 'DESC',
+    skip: number,
+    offset: number,
+  ) {
+    return this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.tagsEntity', 'tags')
+      .where('tags.id = :tag_id', { tag_id })
+      .orderBy('article.id', order)
+      .skip(skip)
+      .take(offset as number)
+      .getManyAndCount();
+  }
+
+  /**
    * 新增文章
    * @param createArticleDto
    * @returns
