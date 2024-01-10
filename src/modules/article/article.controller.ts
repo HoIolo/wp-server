@@ -22,6 +22,7 @@ import {
   DEFAULT_RESOPNSE,
   DELETE_ARTICLE_RESPONSE,
   FIND_ARTICLE_BY_TAG_ID_RESPONSE,
+  FIND_ARTICLE_BY_USER_ID_RESPONSE,
   FIND_ARTICLE_RESPONSE,
 } from './constant';
 import { UserService } from '../user/user.service';
@@ -29,6 +30,7 @@ import { Redis } from 'ioredis';
 import { handlePage, isEmpty } from 'src/utils/common';
 import { TagsService } from '../tags/tags.service';
 import { GetArticleByTagIdDto } from './dto/getArticleByTagId.dto';
+import { GetArticleByUidDto } from './dto/getArticleByUid.dto';
 
 @ApiTags('article')
 @Controller()
@@ -144,6 +146,41 @@ export class ArticleController {
       throw new HttpException(
         {
           message: FIND_ARTICLE_BY_TAG_ID_RESPONSE.TAGID_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return {
+      rows,
+      count,
+    };
+  }
+
+  /**
+   * 根据用户id获取文章信息
+   * @param tagid
+   * @param order
+   * @returns
+   */
+  @Get('/article/user/:uid')
+  async getArticleByUserId(
+    @Param('uid', ParseIntPipe) uid: number,
+    @Query() getArticleByUid: GetArticleByUidDto,
+  ) {
+    const { order } = getArticleByUid;
+    const { skip, offset } = handlePage(getArticleByUid);
+    const [rows, count] = await this.articleService.findArticleByUserId(
+      uid,
+      order,
+      skip,
+      +offset,
+    );
+    if (count < 1) {
+      // 未查询到文章数据
+      throw new HttpException(
+        {
+          message: FIND_ARTICLE_BY_USER_ID_RESPONSE.USER_ERROR,
           code: code.INVALID_PARAMS,
         },
         HttpStatus.BAD_REQUEST,

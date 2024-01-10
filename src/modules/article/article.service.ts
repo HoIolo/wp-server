@@ -100,6 +100,33 @@ export class ArticleService {
   }
 
   /**
+   * 根据用户ID查询文章
+   * @param tag_id
+   * @param order
+   * 可选 DESC 或者 ASC, 默认为 DESC
+   * @param skip
+   * @param offset
+   * @returns
+   */
+  findArticleByUserId(
+    user_id: number,
+    order: 'DESC' | 'ASC' = 'DESC',
+    skip: number,
+    offset: number,
+  ) {
+    return this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoin('article.author', 'author')
+      .addSelect(['author.id', 'author.account'])
+      .leftJoinAndSelect('author.profile', 'profile')
+      .where('author.id = :user_id', { user_id })
+      .orderBy('article.id', order)
+      .skip(skip)
+      .take(offset as number)
+      .getManyAndCount();
+  }
+
+  /**
    * 新增文章
    * @param createArticleDto
    * @returns
