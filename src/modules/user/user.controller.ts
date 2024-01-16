@@ -29,6 +29,7 @@ import {
   updatePwdError,
   updatePwdMessage,
   GetUserResponseMessage,
+  PROHIBITED_MESSAGE,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code, roles } from 'src/constant';
@@ -41,6 +42,7 @@ import { Redis } from 'ioredis';
 import { UpdatePwdDto } from './dto/updatePwd.dto';
 import { isEmpty } from 'src/utils/common';
 import { encryptPassword } from 'src/utils/cryptogram';
+import { BanUserDto } from './dto/banuser.dto';
 
 @ApiTags('user')
 @Controller()
@@ -320,6 +322,40 @@ export class UserController {
     return {
       row: updateResult,
       message: updatePwdMessage.SUCCESS,
+    };
+  }
+
+  @Post('/user/:id/ban')
+  @Role(roles.ADMIN)
+  async banUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() banUserDto: BanUserDto,
+  ) {
+    const { isBan } = banUserDto;
+    const user = await this.userService.findOneById(id);
+    if (!user) {
+      throw new HttpException(
+        {
+          message: GetUserResponseMessage.USER_NOT_FOND,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const result = await this.userService.updateUserStatus(id, isBan);
+    if (result.affected < 1) {
+      throw new HttpException(
+        {
+          message: SYSTEM_ERROR,
+          code: code.SYSTEM_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return {
+      message: isBan
+        ? PROHIBITED_MESSAGE.PROHIBITED_SUCCESS
+        : PROHIBITED_MESSAGE.RELEASE_PROHIBITED_SUCCESS,
     };
   }
 }

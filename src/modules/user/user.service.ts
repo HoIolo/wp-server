@@ -45,7 +45,13 @@ export class UserService {
     const skip = ((page as number) - 1) * Number(offset);
     return this.usersRepository
       .createQueryBuilder('user')
-      .select(['user.id', 'user.account', 'user.email', 'user.role'])
+      .select([
+        'user.id',
+        'user.account',
+        'user.email',
+        'user.role',
+        'user.status',
+      ])
       .leftJoinAndMapOne(
         'user.profile',
         Profile,
@@ -67,6 +73,20 @@ export class UserService {
       .createQueryBuilder('user')
       .where('user.account = :account', {
         account,
+      })
+      .getOne();
+  }
+
+  /**
+   * 按id查询
+   * @param account
+   * @returns
+   */
+  findOneById(id: number) {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.id = :id', {
+        id,
       })
       .getOne();
   }
@@ -222,5 +242,17 @@ export class UserService {
     });
     const role = user && user.role;
     return role ? role >= _role : false;
+  }
+
+  /**
+   * 修改用户状态
+   * @param uid
+   * @param flag
+   * false: 表示解除封禁, true: 表示封禁用户
+   * @returns
+   */
+  updateUserStatus(uid: number, flag: boolean) {
+    const status = flag ? 0 : 1;
+    return this.usersRepository.update({ id: uid }, { status });
   }
 }

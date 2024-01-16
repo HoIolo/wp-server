@@ -4,6 +4,12 @@ export enum loginError {
   ACCOUNT_EXIST = '该账号已经存在',
 }
 
+export enum PROHIBITED_MESSAGE {
+  NOT_EXIST = '用户不存在',
+  PROHIBITED_SUCCESS = '封禁成功！',
+  RELEASE_PROHIBITED_SUCCESS = '解封成功！',
+}
+
 export enum GetUserResponseMessage {
   USER_NOT_FOND = '用户不存在',
   SUCCESS = '获取用户成功',

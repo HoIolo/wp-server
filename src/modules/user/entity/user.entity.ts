@@ -26,6 +26,10 @@ export class User extends BaseEntity {
   @Column({ type: 'int', default: 1 })
   role: number;
 
+  // 用户状态，默认 1 启用， 0 禁用
+  @Column({ type: 'tinyint', default: 1 })
+  status: number;
+
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 }
