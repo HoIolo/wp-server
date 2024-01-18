@@ -44,6 +44,8 @@ export const REGISTER_SUCCESS = '注册成功';
 
 export const COMMON_UPDATE_SUCCESS = '修改成功！';
 
+export const COMMON_DELETE_SUCCESS = '删除成功！';
+
 // 用户资料规则
 export const userProfileRules = {
   username: {

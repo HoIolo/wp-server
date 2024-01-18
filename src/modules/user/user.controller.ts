@@ -14,6 +14,7 @@ import {
   Patch,
   ParseIntPipe,
   Inject,
+  Delete,
 } from '@nestjs/common';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { LoginDTO } from './dto/login.dto';
@@ -31,6 +32,7 @@ import {
   GetUserResponseMessage,
   PROHIBITED_MESSAGE,
   COMMON_UPDATE_SUCCESS,
+  COMMON_DELETE_SUCCESS,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code, roles } from 'src/constant';
@@ -396,6 +398,39 @@ export class UserController {
     }
     return {
       message: COMMON_UPDATE_SUCCESS,
+    };
+  }
+
+  /**
+   * 删除用户
+   * @param id
+   * @returns
+   */
+  @Delete('/user/:id')
+  @Role(roles.ADMIN)
+  async deleteUser(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.userService.findOneById(id);
+    if (!user) {
+      throw new HttpException(
+        {
+          message: GetUserResponseMessage.USER_NOT_FOND,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const result = await this.userService.deleteUser(id);
+    if (result.affected < 1) {
+      throw new HttpException(
+        {
+          message: SYSTEM_ERROR,
+          code: code.SYSTEM_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return {
+      message: COMMON_DELETE_SUCCESS,
     };
   }
 }

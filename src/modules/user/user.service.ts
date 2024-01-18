@@ -265,4 +265,13 @@ export class UserService {
   updateUserRole(uid: number, role: number) {
     return this.usersRepository.update({ id: uid }, { role });
   }
+
+  /**
+   * 软删除用户
+   * @param uid
+   * @returns
+   */
+  deleteUser(uid: number) {
+    return this.usersRepository.softDelete({ id: uid });
+  }
 }
