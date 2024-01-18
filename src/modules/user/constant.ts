@@ -42,6 +42,8 @@ export const SYSTEM_ERROR = '系统繁忙，请稍后再试';
 
 export const REGISTER_SUCCESS = '注册成功';
 
+export const COMMON_UPDATE_SUCCESS = '修改成功！';
+
 // 用户资料规则
 export const userProfileRules = {
   username: {

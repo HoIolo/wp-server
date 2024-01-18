@@ -30,6 +30,7 @@ import {
   updatePwdMessage,
   GetUserResponseMessage,
   PROHIBITED_MESSAGE,
+  COMMON_UPDATE_SUCCESS,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code, roles } from 'src/constant';
@@ -43,6 +44,7 @@ import { UpdatePwdDto } from './dto/updatePwd.dto';
 import { isEmpty } from 'src/utils/common';
 import { encryptPassword } from 'src/utils/cryptogram';
 import { BanUserDto } from './dto/banuser.dto';
+import { UpdateUserRoleDto } from './dto/updateUserRole.dto';
 
 @ApiTags('user')
 @Controller()
@@ -356,6 +358,44 @@ export class UserController {
       message: isBan
         ? PROHIBITED_MESSAGE.PROHIBITED_SUCCESS
         : PROHIBITED_MESSAGE.RELEASE_PROHIBITED_SUCCESS,
+    };
+  }
+
+  /**
+   * 修改用户角色
+   * @param id
+   * @param updateUserRoleDto
+   * @returns
+   */
+  @Patch('/user/:id/role')
+  @Role(roles.SUPER_Admin)
+  async updateUserRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserRoleDto: UpdateUserRoleDto,
+  ) {
+    const { role } = updateUserRoleDto;
+    const user = await this.userService.findOneById(id);
+    if (!user) {
+      throw new HttpException(
+        {
+          message: GetUserResponseMessage.USER_NOT_FOND,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const updateResult = await this.userService.updateUserRole(id, role);
+    if (updateResult.affected < 1) {
+      throw new HttpException(
+        {
+          message: SYSTEM_ERROR,
+          code: code.SYSTEM_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return {
+      message: COMMON_UPDATE_SUCCESS,
     };
   }
 }

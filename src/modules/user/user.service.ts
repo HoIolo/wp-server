@@ -255,4 +255,14 @@ export class UserService {
     const status = flag ? 0 : 1;
     return this.usersRepository.update({ id: uid }, { status });
   }
+
+  /**
+   * 修改用户角色
+   * @param uid
+   * @param role
+   * @returns
+   */
+  updateUserRole(uid: number, role: number) {
+    return this.usersRepository.update({ id: uid }, { role });
+  }
 }
