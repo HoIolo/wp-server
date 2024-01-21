@@ -337,7 +337,13 @@ export class UserController {
     };
   }
 
-  @Post('/user/:id/ban')
+  /**
+   * 修改用户状态(封禁/解禁)
+   * @param id
+   * @param banUserDto
+   * @returns
+   */
+  @Patch('/user/:id/ban')
   @Role(roles.ADMIN)
   async banUser(
     @Param('id', ParseIntPipe) id: number,
