@@ -4,6 +4,8 @@ export enum code {
   SUCCESS = 1001,
   // 无效参数
   INVALID_PARAMS = 1002,
+  // 用户被封禁
+  USER_IS_BLOCKED = 1003,
   // 系统出错
   SYSTEM_ERROR = 1050,
 }

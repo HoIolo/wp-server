@@ -18,11 +18,18 @@ export class AuthService {
   ): Promise<{ code: number; user: User | null }> {
     const user = await this.userService.findOne(account);
     if (user) {
-      const { password: hashedPassword, salt } = user;
+      const { password: hashedPassword, salt, status } = user;
       // 通过密码盐，加密传参，再与数据库里的比较，判断是否相等
       const hashPassword = encryptPassword(password, salt);
       if (hashedPassword === hashPassword) {
         // 密码正确
+        if (status === 0) {
+          // 账号被禁用
+          return {
+            code: 3,
+            user: null,
+          };
+        }
         return {
           code: 1,
           user,

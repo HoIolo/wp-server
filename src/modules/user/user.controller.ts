@@ -154,6 +154,14 @@ export class UserController {
           },
           HttpStatus.BAD_REQUEST,
         );
+      case 3:
+        throw new HttpException(
+          {
+            message: loginError.USER_IS_BAN,
+            code: code.USER_IS_BLOCKED,
+          },
+          HttpStatus.FORBIDDEN,
+        );
       default:
         throw new HttpException(
           { message: loginError.NOT_ACCOUNT, code: code.INVALID_PARAMS },
