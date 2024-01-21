@@ -23,6 +23,7 @@ import fsPm = require('fs/promises');
 import { UPLOAD_RESPONSE } from './constant';
 import { GetImageDto } from './dto/getImageDto';
 import { UpYunService } from './upyun/upyun.service';
+import { getTimeStampFileName } from 'src/utils/common';
 
 @ApiBearerAuth() // Swagger 的 JWT 验证
 @ApiTags('oss')
@@ -45,7 +46,9 @@ export class OssController {
           cb(null, new ConfigService().get('UPLOAD_IMAGE_PATH'));
         },
         filename: (req, file, cb) => {
-          cb(null, file.originalname);
+          const fileSuffix = path.extname(file.originalname);
+          const newFileName = getTimeStampFileName() + fileSuffix;
+          cb(null, newFileName);
         },
       }),
     }),
@@ -56,16 +59,14 @@ export class OssController {
   ): Promise<any> {
     let ossUrl = '';
     const destinationPath = `${this.configService.get('UPLOAD_IMAGE_PATH')}${
-      file.originalname
+      file.filename
     }`;
     if (local == 'true') {
       ossUrl = this.configService.get('API_HOST') + '/' + destinationPath;
     } else {
       // 验证并上传文件到OSS
       ossUrl = await this.ossService.validateFile(
-        `${this.configService.get('OSS_UPLOAD_IMAGE_PATH')}${
-          file.originalname
-        }`,
+        `${this.configService.get('OSS_UPLOAD_IMAGE_PATH')}${file.filename}`,
         destinationPath,
         file.size,
       );
@@ -101,7 +102,8 @@ export class OssController {
 
     for (const file of files) {
       // 为每个文件生成唯一的文件名，可以使用UUID或其他方法
-      const uniqueFileName = file.originalname;
+      const fileSuffix = path.extname(file.originalname);
+      const uniqueFileName = getTimeStampFileName() + fileSuffix;
 
       // 存储文件到目标文件夹
       const destinationPath = path.join(
@@ -122,7 +124,7 @@ export class OssController {
       let ossUrl = '';
       ossUrl = destinationPath;
       if (local == 'true') {
-        ossUrl = destinationPath;
+        ossUrl = this.configService.get('API_HOST') + '/' + destinationPath;
       } else {
         // 验证并上传文件到OSS
         ossUrl = await this.ossService.validateFile(

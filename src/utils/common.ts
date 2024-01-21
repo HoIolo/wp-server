@@ -29,3 +29,19 @@ export const isEmpty = (value: any): boolean => {
 
   return false;
 };
+
+/**
+ *  获取时间戳文件名
+ * @returns
+ */
+export const getTimeStampFileName = () => {
+  const date = new Date();
+  const signature = 'xiaoxi666';
+  const random1 = Math.floor(Math.random() * signature.length - 1) + 1;
+  const random2 = Math.floor(Math.random() * signature.length - 1) + 1;
+  const endCharatacter =
+    random1 > random2
+      ? signature.substring(random2, random1)
+      : signature.substring(random1, random2);
+  return date.getTime() + endCharatacter;
+};
