@@ -44,7 +44,7 @@ export class AuthService {
     }
     // 查无此人
     return {
-      code: 3,
+      code: 4,
       user: null,
     };
   }

@@ -51,6 +51,7 @@ export class UserService {
         'user.email',
         'user.role',
         'user.status',
+        'user.createTime',
       ])
       .leftJoinAndMapOne(
         'user.profile',
@@ -102,7 +103,7 @@ export class UserService {
       .leftJoinAndSelect('profile.user', 'user')
       .where('user.id = :userId', { userId: user_id });
     if (role) {
-      queryBuilder.andWhere('user.role = :role', { role });
+      queryBuilder.andWhere('user.role >= :role', { role });
     }
     const result = await queryBuilder.getOne();
     if (result) result.user = plainToClass(User, result.user);
