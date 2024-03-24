@@ -17,5 +17,6 @@ import { TagsModule } from '../tags/tags.module';
   ],
   controllers: [ArticleController],
   providers: [ArticleService],
+  exports: [ArticleService],
 })
 export class ArticleModule {}

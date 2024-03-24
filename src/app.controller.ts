@@ -46,6 +46,14 @@ export class AppController {
     private readonly redis: Redis,
   ) {}
 
+  @Get('/backstage/home')
+  async getBackstageHome() {
+    const detail = await this.appService.getBackStageDetail();
+    return {
+      row: detail,
+    };
+  }
+
   @Get()
   getHello(): string {
     return this.appService.getHello();

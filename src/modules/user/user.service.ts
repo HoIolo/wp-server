@@ -20,6 +20,11 @@ export class UserService {
     private dataSource: DataSource,
   ) {}
 
+  // 获取总用户数量
+  getTotal() {
+    return this.usersRepository.count();
+  }
+
   /**
    * 根据用户账号查询用户
    * @param account

@@ -27,6 +27,10 @@ export class CommentService {
     private dataSource: DataSource,
   ) {}
 
+  getTotal() {
+    return this.commentRepository.count();
+  }
+
   /**
    * 查询所以评论（分页）
    * @param getCommentDto

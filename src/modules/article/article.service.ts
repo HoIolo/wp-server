@@ -21,6 +21,10 @@ export class ArticleService {
     private readonly tagsService: TagsService,
   ) {}
 
+  getTotal() {
+    return this.articleRepository.count();
+  }
+
   /**
    * 分页查询
    * @param getArticleDto

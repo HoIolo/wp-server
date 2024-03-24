@@ -1,12 +1,35 @@
+import { CommentService } from './modules/comment/comment.service';
+import { ArticleService } from './modules/article/article.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { HttpException, Injectable } from '@nestjs/common';
+import { UserService } from './modules/user/user.service';
+import { TagsService } from './modules/tags/tags.service';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly userService: UserService,
+    private readonly articleService: ArticleService,
+    private readonly commentService: CommentService,
+    private readonly tagService: TagsService,
+  ) {}
 
   getHello(): string {
     return 'Hello World!';
+  }
+
+  async getBackStageDetail() {
+    const userTotal = await this.userService.getTotal();
+    const articleTotal = await this.articleService.getTotal();
+    const commentTotal = await this.commentService.getTotal();
+    const tagTotal = await this.tagService.getTotal();
+    return {
+      userTotal,
+      articleTotal,
+      commentTotal,
+      tagTotal,
+    };
   }
 
   /**

@@ -12,6 +12,10 @@ export class TagsService {
     private readonly tagsRepository: Repository<Tags>,
   ) {}
 
+  getTotal() {
+    return this.tagsRepository.count();
+  }
+
   /**
    * 创建标签
    * @param tags
