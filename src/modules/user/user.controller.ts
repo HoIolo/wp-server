@@ -142,7 +142,7 @@ export class UserController {
         if (!profile) {
           throw new HttpException(
             { message: loginError.NOT_ACCOUNT, code: code.INVALID_PARAMS },
-            HttpStatus.BAD_REQUEST,
+            HttpStatus.UNAUTHORIZED,
           );
         }
         return await this.authService.login(profile);
@@ -152,7 +152,7 @@ export class UserController {
             message: loginError.ACCOUNT_OR_PWD_ERROR,
             code: code.INVALID_PARAMS,
           },
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.UNAUTHORIZED,
         );
       case 3:
         throw new HttpException(
@@ -165,7 +165,7 @@ export class UserController {
       default:
         throw new HttpException(
           { message: loginError.NOT_ACCOUNT, code: code.INVALID_PARAMS },
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.UNAUTHORIZED,
         );
     }
   }
