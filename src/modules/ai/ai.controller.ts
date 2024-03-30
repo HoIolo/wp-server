@@ -25,6 +25,7 @@ export class AIController {
     @Res() res: Response,
     @Body('prompt') prompt: string,
     @Body('model') model: string,
+    @Body('isStream') isStream: string,
   ) {
     if (isEmpty(prompt) || isEmpty(model)) {
       throw new HttpException(
@@ -40,7 +41,10 @@ export class AIController {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Content-Type', 'text/event-stream');
 
-    const response = await this.aiService.conversation(prompt, model);
+    const response = await this.aiService.conversation(model, {
+      prompt,
+      isStream,
+    });
     const reader = (response as any).body.getReader();
     while (true) {
       const { done, value } = await reader.read();

@@ -8,7 +8,7 @@ export class AIService {
   private readonly API_KEY = this.configService.get('TY_API_KEY');
   constructor(private readonly configService: ConfigService) {}
 
-  conversation(prompt: string, model: string) {
+  conversation(model: string, body: any) {
     return fetch(this.API_URL, {
       method: 'POST',
       headers: {
@@ -20,7 +20,10 @@ export class AIService {
       body: JSON.stringify({
         model,
         input: {
-          prompt,
+          prompt: body.prompt,
+        },
+        parameters: {
+          incremental_output: body.isStream || false,
         },
       }),
     });
