@@ -21,7 +21,6 @@ import {
   CREATE_ARTICLE_RESPONSE,
   DEFAULT_RESOPNSE,
   DELETE_ARTICLE_RESPONSE,
-  FIND_ARTICLE_BY_TAG_ID_RESPONSE,
   FIND_ARTICLE_BY_USER_ID_RESPONSE,
   FIND_ARTICLE_RESPONSE,
 } from './constant';
@@ -141,16 +140,6 @@ export class ArticleController {
       skip,
       +offset,
     );
-    if (count < 1) {
-      // 未查询到文章数据
-      throw new HttpException(
-        {
-          message: FIND_ARTICLE_BY_TAG_ID_RESPONSE.TAGID_ERROR,
-          code: code.INVALID_PARAMS,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     return {
       rows,
       count,
