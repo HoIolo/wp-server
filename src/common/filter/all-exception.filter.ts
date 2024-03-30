@@ -25,7 +25,7 @@ export class AllExceptionFilter implements ExceptionFilter {
       code: HttpStatus.SERVICE_UNAVAILABLE,
       timestamp: new Date().toISOString(),
       path: req.url,
-      error: 'Bad Request',
+      error: '系统繁忙！',
       message: new ServiceUnavailableException().getResponse(),
     });
   }

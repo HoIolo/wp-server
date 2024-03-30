@@ -5,7 +5,9 @@ import { LoggerService } from 'src/modules/logger/logger.service';
 
 @Injectable()
 class LogsMiddleware implements NestMiddleware {
-  constructor(private readonly LoggerService: LoggerService) {}
+  constructor(private readonly LoggerService: LoggerService) {
+    this.LoggerService.setContext(LogsMiddleware.name);
+  }
 
   use(request: Request, response: Response, next: NextFunction) {
     response.on('finish', () => {
@@ -20,17 +22,17 @@ class LogsMiddleware implements NestMiddleware {
         requestParams = JSON.stringify(body);
       }
 
-      const message = `${method} ${originalUrl} ${statusCode} ${statusMessage} ${requestParams}`;
+      const message = `${method} ${originalUrl} ${statusCode} ${statusMessage}`;
 
       if (statusCode >= 500) {
-        return this.LoggerService.error(query, message);
+        return this.LoggerService.error(requestParams, message);
       }
 
       if (statusCode >= 400) {
-        return this.LoggerService.warn(query, message);
+        return this.LoggerService.warn(requestParams, message);
       }
 
-      return this.LoggerService.info(query, message);
+      return this.LoggerService.info(requestParams, message);
     });
 
     next();

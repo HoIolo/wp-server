@@ -20,7 +20,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       code: code || status,
       timestamp: new Date().toISOString(),
       path: req.url,
-      error: 'Bad Request',
+      error: '请求有误！',
       message,
     });
   }
