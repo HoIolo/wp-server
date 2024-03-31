@@ -94,6 +94,17 @@ export class TagsService {
    * @returns
    */
   incrementTagsByNum(tags: string[]) {
-    return this.tagsRepository.increment({ tagName: In(tags) }, 'byNum', 1);
+    let queryBuilder = this.tagsRepository
+      .createQueryBuilder('tags')
+      .update()
+      .set({ byNum: () => 'byNum + 1' })
+      .where('tags.tag_name = :tag', { tag: tags[0] });
+    for (let i = 1; i < tags.length; i++) {
+      queryBuilder = queryBuilder.orWhere('tags.tag_name = :tag', {
+        tag: tags[i],
+      });
+    }
+
+    return queryBuilder.execute();
   }
 }

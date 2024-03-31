@@ -147,7 +147,7 @@ export class ArticleService {
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction();
+    await queryRunner.startTransaction('READ COMMITTED');
 
     try {
       const saveArticle = queryRunner.manager.save(mergeArticle);
@@ -172,6 +172,8 @@ export class ArticleService {
       await queryRunner.rollbackTransaction();
       Logger.error(e);
       return null;
+    } finally {
+      queryRunner.release();
     }
   }
 
