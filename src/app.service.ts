@@ -4,6 +4,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { HttpException, Injectable } from '@nestjs/common';
 import { UserService } from './modules/user/user.service';
 import { TagsService } from './modules/tags/tags.service';
+import path = require('path');
 
 @Injectable()
 export class AppService {
@@ -43,7 +44,7 @@ export class AppService {
       await this.mailerService.sendMail({
         to: email,
         subject: '邮箱验证',
-        template: './validate.code.ejs',
+        template: path.join(__dirname, '../public/template/validate.code.ejs'),
         context: {
           code, //验证码
           date: new Date().toLocaleString(), //日期

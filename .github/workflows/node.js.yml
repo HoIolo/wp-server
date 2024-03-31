@@ -60,6 +60,7 @@ jobs:
           cd /www/wwwserver/xiaoxiserver/
           rm -rf dist
         scp: | #将build生成的文件从GitHub服务器的相应目录，传到我服务器的相应目录
+          ./public => /www/wwwserver/xiaoxiserver
           ./dist => /www/wwwserver/xiaoxiserver
           ./package.json => /www/wwwserver/xiaoxiserver
           ./pnpm-lock.yaml => /www/wwwserver/xiaoxiserver
