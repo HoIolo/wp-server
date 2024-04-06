@@ -33,6 +33,7 @@ import {
   PROHIBITED_MESSAGE,
   COMMON_UPDATE_SUCCESS,
   COMMON_DELETE_SUCCESS,
+  SUPER_ADMIN_DELETE_ERROR,
 } from './constant';
 import { Profile } from './entity/profile.entity';
 import { code, roles } from 'src/constant';
@@ -428,6 +429,15 @@ export class UserController {
       throw new HttpException(
         {
           message: GetUserResponseMessage.USER_NOT_FOND,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (user.role > 2) {
+      throw new HttpException(
+        {
+          message: SUPER_ADMIN_DELETE_ERROR,
           code: code.INVALID_PARAMS,
         },
         HttpStatus.BAD_REQUEST,
