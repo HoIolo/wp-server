@@ -48,3 +48,10 @@ export const DELETE_ARTICLE_RESPONSE = {
   FAIL: '删除失败，系统繁忙，请稍后再试！',
   PARAMS_ERROR: '参数错误，不存在这篇文章！',
 };
+
+// 新增文章错误提示
+export const ADD_ARTICLE_ERROR = {
+  ARTICE_SAVE_ERROR: '文章新增失败！',
+  TAG_SAVE_ERROR: '标签引用数量新增失败！',
+  USER_ARTICLE_NUM_ERROR: '用户文章数量新增失败！',
+};

@@ -10,6 +10,7 @@ import { CreateArticleDTO } from './dto/createArticle.dto';
 import * as dayjs from 'dayjs';
 import { User } from '../user/entity/user.entity';
 import { Tags } from '../tags/entity/tags.entity';
+import { ADD_ARTICLE_ERROR } from './constant';
 
 @Injectable()
 export class ArticleService {
@@ -152,18 +153,18 @@ export class ArticleService {
     try {
       const saveArticle = queryRunner.manager.save(mergeArticle);
       if (!saveArticle) {
-        return null;
+        throw ADD_ARTICLE_ERROR.ARTICE_SAVE_ERROR;
+      }
+      // 标签数 + 1
+      const updateTagsResult = await this.tagsService.incrementTagsByNum(tags);
+      if (updateTagsResult.affected < 1) {
+        throw ADD_ARTICLE_ERROR.TAG_SAVE_ERROR;
       }
       // 用户数 + 1
       const updateArticleResult =
         await this.userService.incrementArticleNum(author_id);
       if (updateArticleResult.affected < 1) {
-        return null;
-      }
-      // 标签数 + 1
-      const updateTagsResult = await this.tagsService.incrementTagsByNum(tags);
-      if (updateTagsResult.affected < 1) {
-        return null;
+        throw ADD_ARTICLE_ERROR.USER_ARTICLE_NUM_ERROR;
       }
 
       await queryRunner.commitTransaction();
