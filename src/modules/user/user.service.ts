@@ -45,10 +45,12 @@ export class UserService {
    */
   find(queryDTO: QueryDTO) {
     let { page = 1, offset = 10 } = queryDTO;
+    const { field, keyword, searchType } = queryDTO;
     if (isNaN(Number(page))) page = Number(page);
     if (isNaN(Number(offset))) offset = Number(offset);
     const skip = ((page as number) - 1) * Number(offset);
-    return this.usersRepository
+
+    const queryBuilder = this.usersRepository
       .createQueryBuilder('user')
       .select([
         'user.id',
@@ -63,7 +65,18 @@ export class UserService {
         Profile,
         'profile',
         'profile.user_id = user.id',
-      )
+      );
+    if (field && keyword) {
+      if (searchType === 'like') {
+        queryBuilder.andWhere(`${field} like :keyword`, {
+          keyword: `%${keyword}%`,
+        });
+      } else {
+        queryBuilder.andWhere(`${field} ${searchType} :keyword`, { keyword });
+      }
+    }
+
+    return queryBuilder
       .skip(skip)
       .take(offset as number)
       .getManyAndCount();

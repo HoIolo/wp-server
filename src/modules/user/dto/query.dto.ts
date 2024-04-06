@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumberString, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNumberString, IsOptional, IsString } from 'class-validator';
 
 export class QueryDTO {
   @IsOptional()
@@ -11,6 +11,15 @@ export class QueryDTO {
   @IsNumberString()
   @ApiProperty()
   readonly offset: string | number;
+
+  @IsOptional()
+  @IsIn(['role', 'status', 'account', 'email'])
+  @ApiProperty()
+  readonly field: string;
+
+  @IsOptional()
+  @IsIn(['=', '>', '<', '%'])
+  readonly searchType: string;
 
   @IsOptional()
   @IsString()
