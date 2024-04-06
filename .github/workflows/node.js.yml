@@ -56,7 +56,7 @@ jobs:
         pass: ${{ secrets.AL_SERVER_PASSWORD }} # 服务器的密码
         connect_timeout: 10s
         first_ssh: | #这部分是在服务器上，传输文件前执行的命令，关闭并删除运行中的旧版本
-          pm2 delete main
+          if test -z $(pm2 pid main); then            echo "不存在"; else              pm2 delete main; fi
           cd /www/wwwserver/xiaoxiserver/
           rm -rf dist
         scp: | #将build生成的文件从GitHub服务器的相应目录，传到我服务器的相应目录
@@ -66,6 +66,7 @@ jobs:
           ./pnpm-lock.yaml => /www/wwwserver/xiaoxiserver
         last_ssh: | #这部分是在服务器上，传输文件后执行的命令，新版本重新安装依赖并运行
           cd /www/wwwserver/xiaoxiserver
+          pnpm config set registry https://registry.npmmirror.com # 设置淘宝镜像源
           pnpm install
           pm2 start ./dist/main.js -i max
    
