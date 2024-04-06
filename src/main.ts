@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as session from 'express-session';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { TransformInterceptor } from './common/interceptor/transform.interceptor';
 import helmet from 'helmet';
@@ -25,17 +24,6 @@ async function bootstrap() {
     credentials: true,
   });
   app.set('trust proxy', 1);
-  app.use(
-    session({
-      secret: 'my-secret',
-      resave: false,
-      saveUninitialized: true,
-      cookie: {
-        secure: true,
-        maxAge: 1000 * 60 * 30,
-      },
-    }),
-  );
 
   app.use(helmet());
   // 设置全局访问前缀

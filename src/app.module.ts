@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
@@ -20,6 +20,10 @@ import { LoggerModule } from './modules/logger/logger.module';
 import { AllExceptionFilter } from './common/filter/all-exception.filter';
 import { AIModule } from './modules/ai/ai.module';
 import { TagsModule } from './modules/tags/tags.module';
+import { Repository } from 'typeorm';
+import { SessionEntity } from './modules/session/entity/session.entity';
+import * as ExpressSession from 'express-session';
+import { TypeormStore } from 'connect-typeorm';
 
 @Module({
   imports: [
@@ -36,6 +40,7 @@ import { TagsModule } from './modules/tags/tags.module';
       inject: [ConfigService],
       useFactory: dbFactory,
     }),
+    TypeOrmModule.forFeature([SessionEntity]),
     LoggerModule,
     CacheModule,
     UserModule,
@@ -61,7 +66,27 @@ import { TagsModule } from './modules/tags/tags.module';
   ],
 })
 export class AppModule {
+  constructor(
+    @InjectRepository(SessionEntity)
+    private readonly sessionRepository: Repository<SessionEntity>,
+  ) {}
   configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(
+        ExpressSession({
+          secret: 'my-secret',
+          resave: false,
+          saveUninitialized: true,
+          cookie: {
+            secure: true,
+            maxAge: 1000 * 60 * 30,
+          },
+          store: new TypeormStore({
+            ttl: 1000 * 60 * 30,
+          }).connect(this.sessionRepository),
+        }),
+      )
+      .forRoutes('*');
     consumer.apply(LogsMiddleware).forRoutes('*');
   }
 }
