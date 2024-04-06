@@ -19,10 +19,16 @@ export class QueryDTO {
 
   @IsOptional()
   @IsIn(['=', '>', '<', '%'])
+  @ApiProperty()
   readonly searchType: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty()
   readonly keyword: string;
+
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  @ApiProperty()
+  readonly admin: string;
 }

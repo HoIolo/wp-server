@@ -45,7 +45,7 @@ export class UserService {
    */
   find(queryDTO: QueryDTO) {
     let { page = 1, offset = 10 } = queryDTO;
-    const { field, keyword, searchType } = queryDTO;
+    const { field, keyword, searchType, admin } = queryDTO;
     if (isNaN(Number(page))) page = Number(page);
     if (isNaN(Number(offset))) offset = Number(offset);
     const skip = ((page as number) - 1) * Number(offset);
@@ -66,6 +66,9 @@ export class UserService {
         'profile',
         'profile.user_id = user.id',
       );
+    if (admin == 'true') {
+      queryBuilder.andWhere('user.role >= :role', { role: 2 });
+    }
     if (field && keyword) {
       if (searchType === 'like') {
         queryBuilder.andWhere(`${field} like :keyword`, {
