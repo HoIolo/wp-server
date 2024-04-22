@@ -25,3 +25,9 @@ export enum roles {
   // 超级管理员
   SUPER_Admin = 3,
 }
+
+// 守卫响应
+export enum GUARD_RESPONSE {
+  NOT_LOGIN = '请先登录！',
+  NOT_PERMISSION = '权限不足！',
+}
