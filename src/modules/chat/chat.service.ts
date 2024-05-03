@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Profile } from '../user/entity/profile.entity';
+import { Redis } from 'ioredis';
 
 interface OnlineUser {
   onlineUser: Profile;
@@ -24,8 +25,22 @@ export class ChatService {
   onlineUsers: OnlineUsers;
   userOnlineList: Array<OnlineUser> = [];
   chartMessageList: Array<ChartMessage> = [];
+  private REDIS_CHAT_KEY = 'chatMessage';
 
-  constructor() {
+  constructor(
+    @Inject('REDIS_CLIENT')
+    private readonly redis: Redis,
+  ) {
+    this.redis.lrange(this.REDIS_CHAT_KEY, 0, -1, (err, chatMessage) => {
+      if (err) {
+        console.log(err);
+      }
+      if (chatMessage) {
+        this.chartMessageList = chatMessage.map((item) => {
+          return JSON.parse(item);
+        });
+      }
+    });
     this.onlineUsers = {
       userQueue: [],
       currentUser: null,
@@ -55,6 +70,7 @@ export class ChatService {
    */
   saveChartMessage(receiveMsg: ChartMessage) {
     this.chartMessageList.push(receiveMsg);
+    this.redis.rpush(this.REDIS_CHAT_KEY, JSON.stringify(receiveMsg));
     return receiveMsg;
   }
 
