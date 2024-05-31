@@ -26,4 +26,13 @@ export class Profile extends BaseEntity {
 
   @Column({ default: 0 })
   article_num: number;
+
+  @Column()
+  qq_no: string;
+
+  @Column()
+  github_url: string;
+
+  @Column()
+  bilibili_url: string;
 }

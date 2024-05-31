@@ -14,22 +14,57 @@ export class ProfileDTO {
   @IsString()
   @MinLength(userProfileRules.username.MIN_LENGTH)
   @MaxLength(userProfileRules.username.MAX_LENGTH)
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+    description: '昵称',
+  })
   name: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(userProfileRules.usersign.MAX_LENGTH)
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+    description: '个性签名',
+  })
   signature: string;
 
   @IsOptional()
   @IsUrl()
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+    description: '头像',
+  })
   avatar: string;
 
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+    description: '性别',
+  })
   sex: usersex;
+
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+    description: 'QQ号',
+  })
+  qq_no: string;
+
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+    description: 'GitHub主页链接',
+  })
+  @IsUrl()
+  github_url: string;
+
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+    description: '哔哩哔哩空间链接',
+  })
+  @IsUrl()
+  bilibili_url: string;
 }
