@@ -35,6 +35,7 @@ import { WebsiteModule } from './modules/website/website.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
+      cache: true,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

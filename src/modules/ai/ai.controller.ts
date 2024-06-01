@@ -13,6 +13,7 @@ import { AIRESPONSE } from './constant';
 import { code, roles } from 'src/constant';
 import { Role } from 'src/common/decorator/role.decorator';
 import { AIService } from './ai.service';
+import { ChatDto } from './dto/chat.dto';
 
 @Controller()
 @Role(roles.LOGGED)
@@ -23,10 +24,9 @@ export class AIController {
   async ai(
     @Req() req: Request,
     @Res() res: Response,
-    @Body('prompt') prompt: string,
-    @Body('model') model: string,
-    @Body('isStream') isStream: string,
+    @Body() chatDto: ChatDto,
   ) {
+    const { prompt, model, ai } = chatDto;
     if (isEmpty(prompt) || isEmpty(model)) {
       throw new HttpException(
         {
@@ -37,14 +37,17 @@ export class AIController {
       );
     }
 
+    const aiMap = {
+      TY: 'tyConversation',
+      KIMI: 'kimiConversation',
+    };
+
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Content-Type', 'text/event-stream');
 
-    const response = await this.aiService.conversation(model, {
-      prompt,
-      isStream,
-    });
+    const response = await this.aiService[aiMap[ai]](model, chatDto);
+
     const reader = (response as any).body.getReader();
     while (true) {
       const { done, value } = await reader.read();
