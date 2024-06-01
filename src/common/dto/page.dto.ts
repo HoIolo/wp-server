@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsNumberString, IsString } from 'class-validator';
+import { IsOptional, IsNumberString, IsString, IsIn } from 'class-validator';
 
 export class PageDTO {
   @IsOptional()
@@ -21,4 +21,9 @@ export class PageDTO {
   @IsString()
   @ApiProperty()
   readonly field: string;
+
+  @IsOptional()
+  @IsIn(['DESC', 'ASC'])
+  @ApiProperty()
+  readonly sorted: 'DESC' | 'ASC';
 }

@@ -31,3 +31,10 @@ export enum GUARD_RESPONSE {
   NOT_LOGIN = '请先登录！',
   NOT_PERMISSION = '权限不足！',
 }
+
+// 通用响应消息
+export enum COMMON_RESPONSE_MSG {
+  INVALID_PARAMS = '无效参数',
+  SYSTEM_ERROR = '系统出错',
+  SUCCESS = '成功',
+}

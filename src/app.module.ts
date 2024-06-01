@@ -24,6 +24,7 @@ import { Repository } from 'typeorm';
 import { SessionEntity } from './modules/session/entity/session.entity';
 import * as ExpressSession from 'express-session';
 import { TypeormStore } from 'connect-typeorm';
+import { WebsiteModule } from './modules/website/website.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { TypeormStore } from 'connect-typeorm';
     ChatModule,
     AIModule,
     TagsModule,
+    WebsiteModule,
   ],
   controllers: [AppController],
   providers: [
