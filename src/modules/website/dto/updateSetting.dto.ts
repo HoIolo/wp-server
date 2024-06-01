@@ -1,3 +1,3 @@
-import { CreateSettingDto } from './CreateSetting.dto';
+import { CreateSettingDto } from './createSetting.dto';
 
 export class UpdateSettingDto extends CreateSettingDto {}

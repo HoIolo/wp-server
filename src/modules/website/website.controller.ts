@@ -16,7 +16,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/common/decorator/role.decorator';
 import { COMMON_RESPONSE_MSG, code, roles } from 'src/constant';
 import { GetSettingDto } from './dto/getSetting.dto';
-import { CreateSettingDto } from './dto/CreateSetting.dto';
+import { CreateSettingDto } from './dto/createSetting.dto';
 import { WebsiteSetting } from './entity/websiteSetting.entity';
 import { UpdateSettingDto } from './dto/updateSetting.dto';
 import { CustomResponseData } from 'src/common/types/common.type';
