@@ -64,9 +64,10 @@ jobs:
             ./dist => /www/wwwserver/xiaoxiserver
             ./package.json => /www/wwwserver/xiaoxiserver
             ./pnpm-lock.yaml => /www/wwwserver/xiaoxiserver
+            ./ecosystem.config.js => /www/wwwserver/xiaoxiserver
           last_ssh:
             | #这部分是在服务器上，传输文件后执行的命令，新版本重新安装依赖并运行
             cd /www/wwwserver/xiaoxiserver
             pnpm config set registry https://registry.npmmirror.com # 设置淘宝镜像源
             pnpm i --prod
-            if pm2 pid api-server; then  echo "Stopping and deleting old pm2 process"; pm2 reload ./ecosystem.config.js; else  echo "Old pm2 process not found"; pm2 start ./ecosystem.config.js; fi
+            if pm2 pid api-server; then  echo "Stopping and deleting old pm2 process"; pm2 reload ./ecosystem.config.js --env production; else  echo "Old pm2 process not found"; pm2 start ./ecosystem.config.js --env production; fi
