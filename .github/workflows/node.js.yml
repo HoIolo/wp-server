@@ -5,68 +5,68 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.16.0]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - uses: pnpm/action-setup@v2
-      name: Install pnpm
-      with:
-        version: 8
-        run_install: false
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
 
-    - uses: actions/cache@v3
-      name: Setup pnpm cache
-      with:
-        path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-    # 下载依赖
-    - name: install
-      run: pnpm install
-    # 打包
-    - name: build
-      run: pnpm build
-    # 部署
-    - name: ssh scp ssh pipelines #使用市场找到的action来将项目build的产物传到我的服务器
-      uses: cross-the-world/ssh-scp-ssh-pipelines@latest
-      env:
-        WELCOME: "ssh scp ssh pipelines"
-        LASTSSH: "Doing something after copying"
-      with:
-        host: ${{ secrets.AL_SERVER_IP }} # 服务器的ip
-        user: ${{ secrets.AL_SERVER_NAME }} # 服务器的账号
-        pass: ${{ secrets.AL_SERVER_PASSWORD }} # 服务器的密码
-        connect_timeout: 10s
-        first_ssh: | #这部分是在服务器上，传输文件前执行的命令，关闭并删除运行中的旧版本
-          if pm2 pid main; then  echo "Stopping and deleting old pm2 process"; pm2 delete main; else  echo "Old pm2 process not found"; fi
-          cd /www/wwwserver/xiaoxiserver/
-          rm -rf dist
-        scp: | #将build生成的文件从GitHub服务器的相应目录，传到我服务器的相应目录
-          ./public => /www/wwwserver/xiaoxiserver
-          ./dist => /www/wwwserver/xiaoxiserver
-          ./package.json => /www/wwwserver/xiaoxiserver
-          ./pnpm-lock.yaml => /www/wwwserver/xiaoxiserver
-        last_ssh: | #这部分是在服务器上，传输文件后执行的命令，新版本重新安装依赖并运行
-          cd /www/wwwserver/xiaoxiserver
-          pnpm config set registry https://registry.npmmirror.com # 设置淘宝镜像源
-          pnpm install
-          pm2 start ./dist/main.js -i max
-   
+      # 下载依赖
+      - name: install
+        run: pnpm install
+      # 打包
+      - name: build
+        run: pnpm build
+      # 部署
+      - name: ssh scp ssh pipelines #使用市场找到的action来将项目build的产物传到我的服务器
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+        env:
+          WELCOME: 'ssh scp ssh pipelines'
+          LASTSSH: 'Doing something after copying'
+        with:
+          host: ${{ secrets.AL_SERVER_IP }} # 服务器的ip
+          user: ${{ secrets.AL_SERVER_NAME }} # 服务器的账号
+          pass: ${{ secrets.AL_SERVER_PASSWORD }} # 服务器的密码
+          connect_timeout: 10s
+          first_ssh:
+            | #这部分是在服务器上，传输文件前执行的命令，关闭并删除运行中的旧版本
+            cd /www/wwwserver/xiaoxiserver/
+            rm -rf dist
+          scp:
+            | #将build生成的文件从GitHub服务器的相应目录，传到我服务器的相应目录
+            ./public => /www/wwwserver/xiaoxiserver
+            ./dist => /www/wwwserver/xiaoxiserver
+            ./package.json => /www/wwwserver/xiaoxiserver
+            ./pnpm-lock.yaml => /www/wwwserver/xiaoxiserver
+          last_ssh:
+            | #这部分是在服务器上，传输文件后执行的命令，新版本重新安装依赖并运行
+            cd /www/wwwserver/xiaoxiserver
+            pnpm config set registry https://registry.npmmirror.com # 设置淘宝镜像源
+            pnpm i --prod
+            if pm2 pid api-server; then  echo "Stopping and deleting old pm2 process"; pm2 reload ./ecosystem.config.js; else  echo "Old pm2 process not found"; pm2 start ./ecosystem.config.js; fi
