@@ -19,5 +19,6 @@ export class ChatDto {
   ai: 'TY' | 'KIMI';
 
   @IsString()
+  @IsOptional()
   conversation_id: string;
 }
