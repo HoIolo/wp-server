@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { COMMON_CONFIG } from 'src/config/common.config';
 import { Profile } from 'src/modules/user/entity/profile.entity';
 import { User } from 'src/modules/user/entity/user.entity';
 import { UserService } from 'src/modules/user/user.service';
@@ -52,9 +53,44 @@ export class AuthService {
   async login(profile: Profile) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { ...payload } = profile;
+    const access_token_expired = COMMON_CONFIG.TOKEN.ACCESS_TOKEN.EXPIRES_IN;
+    const refresh_token_expired = COMMON_CONFIG.TOKEN.REFRESH_TOKEN.EXPIRES_IN;
+    const { id } = payload;
+    return {
+      access_token: this.jwtService.sign(payload, {
+        expiresIn: access_token_expired,
+      }),
+      refresh_token: this.jwtService.sign(
+        { id },
+        {
+          expiresIn: refresh_token_expired,
+        },
+      ),
+    };
+  }
+
+  async refresh(refresh_token: string) {
+    let refreshPayload = null;
+    try {
+      refreshPayload = this.jwtService.verify(refresh_token);
+    } catch (error) {
+      return error;
+    }
+
+    const { id: uid } = refreshPayload;
+    const user = await this.userService.findOneById(uid);
+    const { ...payload } = user;
 
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, {
+        expiresIn: COMMON_CONFIG.TOKEN.ACCESS_TOKEN.EXPIRES_IN,
+      }),
+      refresh_token: this.jwtService.sign(
+        { id: uid },
+        {
+          expiresIn: COMMON_CONFIG.TOKEN.REFRESH_TOKEN.EXPIRES_IN,
+        },
+      ),
     };
   }
 }
