@@ -10,6 +10,7 @@ import { join } from 'path';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import getLogLevels from './utils/getLogLevels';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { COMMON_CONFIG } from './config/common.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -50,6 +51,6 @@ async function bootstrap() {
   // 最后一步是setup()。它依次接受（1）装入Swagger的路径，（2）应用程序实例, （3）描述Nest应用程序的文档。
   SwaggerModule.setup('/api', app, document);
 
-  await app.listen(3000);
+  await app.listen(COMMON_CONFIG.SERVER_PORT);
 }
 bootstrap();
