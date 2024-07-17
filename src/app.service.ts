@@ -41,7 +41,7 @@ export class AppService {
   async sendEmail(email: string) {
     const code = Math.random().toString().slice(-6);
     try {
-      await this.mailerService.sendMail({
+      this.mailerService.sendMail({
         to: email,
         subject: '邮箱验证',
         template: path.join(__dirname, '../public/template/validate.code.ejs'),
