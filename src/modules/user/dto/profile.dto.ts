@@ -6,14 +6,18 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { userProfileRules, usersex } from '../constant';
+import { DTO_MESSAGE, userProfileRules, usersex } from '../constant';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ProfileDTO {
   @IsOptional()
   @IsString()
-  @MinLength(userProfileRules.username.MIN_LENGTH)
-  @MaxLength(userProfileRules.username.MAX_LENGTH)
+  @MinLength(userProfileRules.username.MIN_LENGTH, {
+    message: DTO_MESSAGE.PROFILE.NAME,
+  })
+  @MaxLength(userProfileRules.username.MAX_LENGTH, {
+    message: DTO_MESSAGE.PROFILE.NAME,
+  })
   @ApiProperty({
     required: false,
     description: '昵称',
@@ -23,7 +27,9 @@ export class ProfileDTO {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(userProfileRules.usersign.MAX_LENGTH)
+  @MaxLength(userProfileRules.usersign.MAX_LENGTH, {
+    message: DTO_MESSAGE.PROFILE.SIGNATURE,
+  })
   @ApiProperty({
     required: false,
     description: '个性签名',

@@ -55,7 +55,7 @@ export const userProfileRules = {
     // 最小长度为 3
     MIN_LENGTH: 2,
     // 最大长度为 5
-    MAX_LENGTH: 5,
+    MAX_LENGTH: 10,
   },
   usersign: {
     MAX_LENGTH: 200,
@@ -67,6 +67,19 @@ export const userProfileRules = {
     men: 1,
     // 女性
     women: 2,
+  },
+};
+
+// DTO 消息提示
+export const DTO_MESSAGE = {
+  REGISTER: {
+    ACCOUNT: '用户名不能包含特殊字符',
+    PWD: '密码不能包含空格',
+    EMAIL: '邮箱格式不正确',
+  },
+  PROFILE: {
+    NAME: '昵称长度不符合规范',
+    SIGNATURE: '个性签名长度不符合规范',
   },
 };
 

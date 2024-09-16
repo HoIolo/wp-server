@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { DTO_MESSAGE } from '../constant';
 
 export class UpdatePwdDto {
   @IsString()
@@ -7,7 +8,9 @@ export class UpdatePwdDto {
   @ApiProperty()
   oldPassword: string;
 
-  @IsString()
+  @Matches(/^[^\s]+$/, {
+    message: DTO_MESSAGE.REGISTER.PWD,
+  })
   @IsNotEmpty()
   @ApiProperty()
   newPassword: string;

@@ -1,18 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { DTO_MESSAGE } from '../constant';
 
 export class RegisterDTO {
-  @IsString()
+  @Matches(/^[a-zA-Z0-9]+$/, {
+    message: DTO_MESSAGE.REGISTER.ACCOUNT,
+  })
   @IsNotEmpty()
   @ApiProperty()
   account: string;
 
-  @IsString()
+  @Matches(/^[^\s]+$/, {
+    message: DTO_MESSAGE.REGISTER.PWD,
+  })
   @IsNotEmpty()
   @ApiProperty()
   password: string;
 
-  @IsEmail()
+  @IsEmail(
+    {},
+    {
+      message: DTO_MESSAGE.REGISTER.EMAIL,
+    },
+  )
   @IsNotEmpty()
   @ApiProperty()
   email: string;
