@@ -117,7 +117,9 @@ export class UserController {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    const userProfile = await this.userService.findProfileByUid(req.user.id);
+    const userProfile = await this.userService.findProfileByUid(
+      req.user.user.id,
+    );
     return {
       row: userProfile,
     };
