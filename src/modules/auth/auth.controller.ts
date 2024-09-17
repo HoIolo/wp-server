@@ -78,7 +78,7 @@ export class AuthController {
           message: RESPONSE_MSG.REFRESH_TOKEN_EMPTY,
           code: code.INVALID_PARAMS,
         },
-        HttpStatus.UNAUTHORIZED,
+        HttpStatus.BAD_REQUEST,
       );
     }
     const { refresh_token: new_refresh_token, access_token } =
@@ -89,7 +89,7 @@ export class AuthController {
           message: RESPONSE_MSG.REFRESH_TOKEN_INVALID,
           code: code.INVALID_PARAMS,
         },
-        HttpStatus.UNAUTHORIZED,
+        HttpStatus.BAD_REQUEST,
       );
     }
     return {
