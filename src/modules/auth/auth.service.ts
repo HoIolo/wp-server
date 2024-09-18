@@ -55,13 +55,13 @@ export class AuthService {
     const { ...payload } = profile;
     const access_token_expired = COMMON_CONFIG.TOKEN.ACCESS_TOKEN.EXPIRES_IN;
     const refresh_token_expired = COMMON_CONFIG.TOKEN.REFRESH_TOKEN.EXPIRES_IN;
-    const { id } = payload;
+    const { id, user } = payload;
     return {
       access_token: this.jwtService.sign(payload, {
         expiresIn: access_token_expired,
       }),
       refresh_token: this.jwtService.sign(
-        { id },
+        { id, user_id: user.id },
         {
           expiresIn: refresh_token_expired,
         },
@@ -77,8 +77,8 @@ export class AuthService {
       return error;
     }
 
-    const { id: uid } = refreshPayload;
-    const user = await this.userService.findOneById(uid);
+    const { user_id: uid } = refreshPayload;
+    const user = await this.userService.findProfileByUid(uid);
     const { ...payload } = user;
 
     return {

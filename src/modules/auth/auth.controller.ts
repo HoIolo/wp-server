@@ -2,10 +2,10 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   HttpException,
   HttpStatus,
   Post,
+  Query,
 } from '@nestjs/common';
 import { LoginDTO } from './dto/login.dto';
 import { UserService } from '../user/user.service';
@@ -71,7 +71,7 @@ export class AuthController {
    * 刷新token
    */
   @Get('refresh')
-  async refreshToken(@Headers('refresh_token') refresh_token: string) {
+  async refreshToken(@Query('refresh_token') refresh_token: string) {
     if (isEmpty(refresh_token)) {
       throw new HttpException(
         {
