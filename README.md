@@ -1,8 +1,8 @@
-# <center>博客API服务</center>
+# <center>智语轩API服务</center>
 
 ## 项目介绍
 
-本项目为Nest.js完成的博客API服务，集成权限验证，对象储存，webSocket聊天功能
+本项目为Nest.js完成的后端API服务，集成权限验证，对象储存，webSocket聊天功能
 
 ### 项目使用技术
 
@@ -84,6 +84,22 @@ OSS_UPLOAD_IMAGE_PATH=image/
 
 # 图片上传
 UPLOAD_IMAGE_PATH=upload/oss/image/
+
+# 又拍云配置
+UPYUN_service=
+UPYUN_operator=
+UPYUN_password=
+UPYUN_ACESS_URL=
+
+UPLOAD_IMAGE_PATH=upload/oss/image/
+
+# 通义千问配置
+TY_API_URL=xxx
+TY_API_KEY=xxx
+
+# kimi-ai配置
+KIMI_API_URL=xxxx
+KIMI_API_KEY=xxxx
 ```
 
 > 注意：环境变量值缺一不可，否则无法正常运行！
