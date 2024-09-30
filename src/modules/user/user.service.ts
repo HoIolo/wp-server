@@ -217,7 +217,7 @@ export class UserService {
    * @returns
    */
   incrementArticleNum(id: number | string) {
-    return this.profilesRepository.increment({ id: +id }, 'article_num', 1);
+    return this.profilesRepository.increment({ user: {id: +id} }, 'article_num', 1);
   }
 
   /**
