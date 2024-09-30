@@ -55,3 +55,8 @@ export const ADD_ARTICLE_ERROR = {
   TAG_SAVE_ERROR: '标签引用数量新增失败！',
   USER_ARTICLE_NUM_ERROR: '用户文章数量新增失败！',
 };
+
+// 新增文章类型错误提示
+export const ADD_ARTICLE_TYPE_ERROR = {
+  ARTICLE_TYPE_ALREADY_EXIST: '文章类型已存在！',
+};

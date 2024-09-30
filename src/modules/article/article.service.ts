@@ -35,10 +35,11 @@ export class ArticleService {
     const { field, keyword, sorted = 'DESC' } = getArticleDto;
     const { skip, offset } = handlePage(getArticleDto);
     const queryBuild = this.articleRepository
-      .createQueryBuilder()
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.type', 'type')
       .skip(skip)
       .take(offset as number)
-      .orderBy('id', sorted);
+      .orderBy('article.id', sorted)
     if (field === 'type' && keyword) {
       const keywordArray = keyword.split(',');
       for (const item of keywordArray) {
@@ -75,6 +76,7 @@ export class ArticleService {
       .leftJoin('article.author', 'author')
       .addSelect(['author.id', 'author.account'])
       .leftJoinAndSelect('author.profile', 'profile')
+      .leftJoinAndSelect('article.type', 'type')
       .where('article.id = :id', { id: article_id })
       .getOne();
   }
@@ -97,6 +99,7 @@ export class ArticleService {
     return this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tagsEntity', 'tags')
+      .leftJoinAndSelect('article.type', 'type')
       .where('tags.id = :tag_id', { tag_id })
       .orderBy('article.id', order)
       .skip(skip)
@@ -124,6 +127,7 @@ export class ArticleService {
       .leftJoin('article.author', 'author')
       .addSelect(['author.id', 'author.account'])
       .leftJoinAndSelect('author.profile', 'profile')
+      .leftJoinAndSelect('article.type', 'type')
       .where('author.id = :user_id', { user_id })
       .orderBy('article.id', order)
       .skip(skip)

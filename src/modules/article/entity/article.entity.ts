@@ -10,6 +10,7 @@ import {
   ManyToMany,
   ManyToOne,
 } from 'typeorm';
+import { ArticleType } from './articleType.entity';
 
 @Entity()
 export class Article extends BaseEntity {
@@ -21,8 +22,10 @@ export class Article extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
-  type: string;
+  @ManyToOne(() => ArticleType, (type) => type.articles)
+  @JoinColumn({ name: 'type_id' })
+  @Index()
+  type: ArticleType;
 
   @Column()
   description: string;
