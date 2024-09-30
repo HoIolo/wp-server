@@ -86,7 +86,7 @@ export class AuthService {
         expiresIn: COMMON_CONFIG.TOKEN.ACCESS_TOKEN.EXPIRES_IN,
       }),
       refresh_token: this.jwtService.sign(
-        { id: uid },
+        { id: payload.id, user_id: uid },
         {
           expiresIn: COMMON_CONFIG.TOKEN.REFRESH_TOKEN.EXPIRES_IN,
         },
