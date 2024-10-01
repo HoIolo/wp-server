@@ -17,6 +17,7 @@ export const CREATE_ARTICLE_RESPONSE = {
   FAIL: '新增失败，系统繁忙，请稍后再试！',
   PARAMS_ERROR: '参数错误，请重新提交！',
   TAGS_ERROR: '参数错误，不存在某个或者全部标签！',
+  TYPEID_ERROR: '参数错误，不存在这个分类！',
 };
 
 // 根据标签id查询文章响应

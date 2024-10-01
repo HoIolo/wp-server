@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
   IsNotEmpty,
+  IsNumberString,
   IsString,
   IsUrl,
   MaxLength,
@@ -21,10 +22,10 @@ export class CreateArticleDTO {
   @MaxLength(createArticleRules.title.MAX_LENGTH)
   title: string;
 
-  @IsString()
+  @IsNumberString()
   @IsNotEmpty()
   @ApiProperty()
-  type: string;
+  type_id: string;
 
   @IsString()
   @IsNotEmpty()

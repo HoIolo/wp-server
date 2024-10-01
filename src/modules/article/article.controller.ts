@@ -30,6 +30,7 @@ import { handlePage, isEmpty } from 'src/utils/common';
 import { TagsService } from '../tags/tags.service';
 import { GetArticleByTagIdDto } from './dto/getArticleByTagId.dto';
 import { GetArticleByUidDto } from './dto/getArticleByUid.dto';
+import { ArticleTypeService } from './articleType.service';
 
 @ApiTags('article')
 @Controller()
@@ -43,7 +44,8 @@ export class ArticleController {
     @Inject('REDIS_CLIENT')
     private readonly redis: Redis,
     private readonly tagsService: TagsService,
-  ) {}
+    private readonly articleTypeService: ArticleTypeService,
+  ) { }
 
   /**
    * 分页获取文章信息
@@ -222,7 +224,7 @@ export class ArticleController {
   @Post('article')
   @Role(roles.LOGGED)
   async createArticle(@Body() createArticleDto: CreateArticleDTO) {
-    const { author_id, tags } = createArticleDto;
+    const { author_id, tags, type_id } = createArticleDto;
     const user = await this.userService.findProfileByUid(author_id as number);
     // 提供作者id为错误的
     if (!user) {
@@ -246,9 +248,21 @@ export class ArticleController {
         HttpStatus.BAD_REQUEST,
       );
     }
+    // 验证分类是否存在
+    const articleType = await this.articleTypeService.findById(Number(type_id));
+    if (!articleType) {
+      throw new HttpException(  
+        {
+          message: CREATE_ARTICLE_RESPONSE.TYPEID_ERROR,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const result = await this.articleService.createArticle(
       createArticleDto,
       tagsList,
+      articleType,
     );
     if (result === null) {
       throw new HttpException(

@@ -64,7 +64,7 @@ export class ArticleTypeService {
      * @returns 
      */
     findById(id: number) {
-        return this.articleTypeRepository.find({ where: {id}, relations: [this.acticles] });
+        return this.articleTypeRepository.findOne({ where: {id}, relations: [this.acticles] });
     }
 
     /**

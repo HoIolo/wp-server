@@ -11,6 +11,7 @@ import * as dayjs from 'dayjs';
 import { User } from '../user/entity/user.entity';
 import { Tags } from '../tags/entity/tags.entity';
 import { ADD_ARTICLE_ERROR } from './constant';
+import { ArticleType } from './entity/articleType.entity';
 
 @Injectable()
 export class ArticleService {
@@ -140,7 +141,7 @@ export class ArticleService {
    * @param createArticleDto
    * @returns
    */
-  async createArticle(createArticleDto: CreateArticleDTO, tagsList: Tags[]) {
+  async createArticle(createArticleDto: CreateArticleDTO, tagsList: Tags[], articleType: ArticleType) {
     const { author_id, tags } = createArticleDto;
     const article = new Article();
     const user = new User();
@@ -148,6 +149,7 @@ export class ArticleService {
     article.publish_date = dayjs().format('YYYY-MM-DD HH:mm:ss');
     article.author = user;
     article.tagsEntity = tagsList;
+    article.type = articleType;
     const mergeArticle = Object.assign(article, createArticleDto) as Article;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -160,13 +162,13 @@ export class ArticleService {
         throw ADD_ARTICLE_ERROR.ARTICE_SAVE_ERROR;
       }
       // 标签数 + 1
-      const updateTagsResult = await this.tagsService.incrementTagsByNum(tags);
+      const updateTagsResult = await this.tagsService.incrementTagsByNum(tags, queryRunner);
       if (updateTagsResult.affected < 1) {
         throw ADD_ARTICLE_ERROR.TAG_SAVE_ERROR;
       }
       // 用户数 + 1
       const updateArticleResult =
-        await this.userService.incrementArticleNum(author_id);
+        await this.userService.incrementArticleNum(author_id, queryRunner);
       if (updateArticleResult.affected < 1) {
         throw ADD_ARTICLE_ERROR.USER_ARTICLE_NUM_ERROR;
       }

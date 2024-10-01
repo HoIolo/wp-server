@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { In, QueryRunner, Repository } from 'typeorm';
 import { Tags } from './entity/tags.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { handlePage } from 'src/utils/common';
@@ -93,15 +93,17 @@ export class TagsService {
    * @param tags
    * @returns
    */
-  incrementTagsByNum(tags: string[]) {
-    let queryBuilder = this.tagsRepository
-      .createQueryBuilder('tags')
-      .update()
-      .set({ byNum: () => 'byNum + 1' })
-      .where('tags.tag_name = :tag', { tag: tags[0] });
-    for (let i = 1; i < tags.length; i++) {
-      queryBuilder = queryBuilder.orWhere('tags.tag_name = :tag', {
-        tag: tags[i],
+  incrementTagsByNum(tags: string[], queryRunner?: QueryRunner) {
+    let queryBuilder: any = this.tagsRepository
+    if (queryRunner) {
+      queryBuilder = queryRunner.manager
+    }
+    queryBuilder =  queryBuilder.createQueryBuilder()
+    .update(Tags)
+    .set({ byNum: () => 'byNum + 1' })
+    for (let i = 0; i < tags.length; i++) {
+      queryBuilder = queryBuilder.orWhere('tags.tag_name = :tag'+i, {
+        ['tag'+i]: tags[i],
       });
     }
 

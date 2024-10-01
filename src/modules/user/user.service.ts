@@ -1,7 +1,7 @@
 import { QueryDTO } from './dto/query.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { Profile } from './entity/profile.entity';
 import { RegisterDTO } from './dto/register.dto';
@@ -216,7 +216,10 @@ export class UserService {
    * @param id
    * @returns
    */
-  incrementArticleNum(id: number | string) {
+  incrementArticleNum(id: number | string, queryRunner?: QueryRunner) {
+    if (queryRunner) {
+      return queryRunner.manager.increment(Profile, { user: {id: +id} }, 'article_num', 1);
+    }
     return this.profilesRepository.increment({ user: {id: +id} }, 'article_num', 1);
   }
 
