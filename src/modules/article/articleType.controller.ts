@@ -32,7 +32,8 @@ export class ArticleTypeController {
     async create(@Body() createArticleTypeDto: CreateArticleTypeDto): Promise<CustomResponseData> {
         const { name } = createArticleTypeDto
         const findArticleType = await this.articleTypeService.findByName(name);
-        if (findArticleType) {
+        // 判断文章类型是否存在
+        if (findArticleType && findArticleType.length > 0) {
             throw new HttpException( {
                 message: ADD_ARTICLE_TYPE_ERROR.ARTICLE_TYPE_ALREADY_EXIST,
                 code: code.INVALID_PARAMS,
