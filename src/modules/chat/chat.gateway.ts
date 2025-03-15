@@ -61,8 +61,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('chartMsg')
-  chartMsg(@MessageBody() body: any, @ConnectedSocket() client: Socket): void {
-    const chartMessage = this.chatService.saveChartMessage({
+  async chartMsg(
+    @MessageBody() body: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<void> {
+    const chartMessage = await this.chatService.saveChartMessage({
       id: client.id,
       ...body,
     });
