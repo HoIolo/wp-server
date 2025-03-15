@@ -40,6 +40,7 @@ export class AIController {
     const aiMap = {
       TY: 'tyConversation',
       KIMI: 'kimiConversation',
+      SF: 'sfConversation',
     };
 
     res.setHeader('Cache-Control', 'no-cache');
