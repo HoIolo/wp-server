@@ -26,6 +26,7 @@ import * as ExpressSession from 'express-session';
 import { TypeormStore } from 'connect-typeorm';
 import { WebsiteModule } from './modules/website/website.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -56,6 +57,14 @@ import { ScheduleModule } from '@nestjs/schedule';
     TagsModule,
     WebsiteModule,
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000, // 时间窗口，单位为毫秒
+          limit: 100, // 在时间窗口内允许的最大请求数
+        },
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [
@@ -67,6 +76,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     {
       provide: APP_FILTER,
       useClass: AllExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
