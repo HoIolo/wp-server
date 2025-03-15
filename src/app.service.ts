@@ -4,6 +4,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { HttpException, Injectable } from '@nestjs/common';
 import { UserService } from './modules/user/user.service';
 import { TagsService } from './modules/tags/tags.service';
+import { VisitorService } from './modules/website/visitor.service';
 import path = require('path');
 
 @Injectable()
@@ -14,6 +15,7 @@ export class AppService {
     private readonly articleService: ArticleService,
     private readonly commentService: CommentService,
     private readonly tagService: TagsService,
+    private readonly visitorService: VisitorService,
   ) {}
 
   getHello(): string {
@@ -25,11 +27,14 @@ export class AppService {
     const articleTotal = await this.articleService.getTotal();
     const commentTotal = await this.commentService.getTotal();
     const tagTotal = await this.tagService.getTotal();
+    const visitorTotal = await this.visitorService.getTotalVisits();
+
     return {
       userTotal,
       articleTotal,
       commentTotal,
       tagTotal,
+      visitorTotal,
     };
   }
 
