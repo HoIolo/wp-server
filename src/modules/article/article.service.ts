@@ -33,14 +33,22 @@ export class ArticleService {
    * @returns
    */
   async find(getArticleDto: GetArticleDTO) {
-    const { field, keyword, sorted = 'DESC' } = getArticleDto;
+    const { field, keyword, sorted = 'DESC', is_approved } = getArticleDto;
     const { skip, offset } = handlePage(getArticleDto);
     const queryBuild = this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.type', 'type')
       .skip(skip)
       .take(offset as number)
-      .orderBy('article.id', sorted)
+      .orderBy('article.id', sorted);
+
+    // 按审核状态过滤
+    if (is_approved !== undefined) {
+      queryBuild.andWhere('article.is_approved = :is_approved', {
+        is_approved,
+      });
+    }
+
     if (field === 'type' && keyword) {
       const keywordArray = keyword.split(',');
       for (const item of keywordArray) {
@@ -89,6 +97,7 @@ export class ArticleService {
    * 可选 DESC 或者 ASC, 默认为 DESC
    * @param skip
    * @param offset
+   * @param is_approved 审核状态过滤
    * @returns
    */
   findArticleByTagId(
@@ -96,25 +105,35 @@ export class ArticleService {
     order: 'DESC' | 'ASC' = 'DESC',
     skip: number,
     offset: number,
+    is_approved?: number,
   ) {
-    return this.articleRepository
+    const queryBuilder = this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tagsEntity', 'tags')
       .leftJoinAndSelect('article.type', 'type')
       .where('tags.id = :tag_id', { tag_id })
       .orderBy('article.id', order)
       .skip(skip)
-      .take(offset as number)
-      .getManyAndCount();
+      .take(offset as number);
+
+    // 按审核状态过滤
+    if (is_approved !== undefined) {
+      queryBuilder.andWhere('article.is_approved = :is_approved', {
+        is_approved,
+      });
+    }
+
+    return queryBuilder.getManyAndCount();
   }
 
   /**
    * 根据用户ID查询文章
-   * @param tag_id
+   * @param user_id
    * @param order
    * 可选 DESC 或者 ASC, 默认为 DESC
    * @param skip
    * @param offset
+   * @param is_approved 审核状态过滤
    * @returns
    */
   findArticleByUserId(
@@ -122,8 +141,9 @@ export class ArticleService {
     order: 'DESC' | 'ASC' = 'DESC',
     skip: number,
     offset: number,
+    is_approved?: number,
   ) {
-    return this.articleRepository
+    const queryBuilder = this.articleRepository
       .createQueryBuilder('article')
       .leftJoin('article.author', 'author')
       .addSelect(['author.id', 'author.account'])
@@ -132,8 +152,16 @@ export class ArticleService {
       .where('author.id = :user_id', { user_id })
       .orderBy('article.id', order)
       .skip(skip)
-      .take(offset as number)
-      .getManyAndCount();
+      .take(offset as number);
+
+    // 按审核状态过滤
+    if (is_approved !== undefined) {
+      queryBuilder.andWhere('article.is_approved = :is_approved', {
+        is_approved,
+      });
+    }
+
+    return queryBuilder.getManyAndCount();
   }
 
   /**
@@ -141,7 +169,11 @@ export class ArticleService {
    * @param createArticleDto
    * @returns
    */
-  async createArticle(createArticleDto: CreateArticleDTO, tagsList: Tags[], articleType: ArticleType) {
+  async createArticle(
+    createArticleDto: CreateArticleDTO,
+    tagsList: Tags[],
+    articleType: ArticleType,
+  ) {
     const { author_id, tags } = createArticleDto;
     const article = new Article();
     const user = new User();
@@ -162,13 +194,18 @@ export class ArticleService {
         throw ADD_ARTICLE_ERROR.ARTICE_SAVE_ERROR;
       }
       // 标签数 + 1
-      const updateTagsResult = await this.tagsService.incrementTagsByNum(tags, queryRunner);
+      const updateTagsResult = await this.tagsService.incrementTagsByNum(
+        tags,
+        queryRunner,
+      );
       if (updateTagsResult.affected < 1) {
         throw ADD_ARTICLE_ERROR.TAG_SAVE_ERROR;
       }
       // 用户数 + 1
-      const updateArticleResult =
-        await this.userService.incrementArticleNum(author_id, queryRunner);
+      const updateArticleResult = await this.userService.incrementArticleNum(
+        author_id,
+        queryRunner,
+      );
       if (updateArticleResult.affected < 1) {
         throw ADD_ARTICLE_ERROR.USER_ARTICLE_NUM_ERROR;
       }
@@ -188,26 +225,39 @@ export class ArticleService {
    * 根据年份和日期查询
    * @param year
    * @param month
+   * @param is_approved 审核状态过滤
    * @returns
    */
-  async findByYearAndMonth(year: number, month: number) {
-    return this.articleRepository
+  async findByYearAndMonth(year: number, month: number, is_approved?: number) {
+    const queryBuilder = this.articleRepository
       .createQueryBuilder()
       .where('YEAR(publish_date) = :year and MONTH(publish_date) = :month', {
         year: year,
         month,
-      })
-      .orderBy('id', 'DESC')
-      .getManyAndCount();
+      });
+
+    // 按审核状态过滤
+    if (is_approved !== undefined) {
+      queryBuilder.andWhere('is_approved = :is_approved', { is_approved });
+    }
+
+    return queryBuilder.orderBy('id', 'DESC').getManyAndCount();
   }
 
   /**
    * 获取时间轴
-   * @param pageDto
+   * @param order 排序方式
+   * @param is_approved 审核状态过滤
    */
-  async findTimeLine(order: 'DESC' | 'ASC') {
-    const data = await this.articleRepository
-      .createQueryBuilder('article')
+  async findTimeLine(order: 'DESC' | 'ASC', is_approved?: number) {
+    const queryBuilder = this.articleRepository.createQueryBuilder('article');
+
+    // 按审核状态过滤
+    if (is_approved !== undefined) {
+      queryBuilder.where('article.is_approved = :is_approved', { is_approved });
+    }
+
+    const data = await queryBuilder
       .select('YEAR(publish_date)', 'year')
       .addSelect('MONTH(publish_date)', 'month')
       .groupBy('year, month')
@@ -218,6 +268,7 @@ export class ArticleService {
       const [child, count] = await this.findByYearAndMonth(
         item.year,
         item.month,
+        is_approved,
       );
       item.child = {
         rows: child,
@@ -225,8 +276,14 @@ export class ArticleService {
       };
     }
 
-    const gruop = await this.articleRepository
-      .createQueryBuilder()
+    const groupQueryBuilder = this.articleRepository.createQueryBuilder();
+
+    // 按审核状态过滤
+    if (is_approved !== undefined) {
+      groupQueryBuilder.where('is_approved = :is_approved', { is_approved });
+    }
+
+    const gruop = await groupQueryBuilder
       .select(
         'COUNT(DISTINCT CONCAT(YEAR(publish_date), MONTH(publish_date)))',
         'count',
@@ -248,5 +305,32 @@ export class ArticleService {
       .where('id = :id', { id: article_id })
       .execute();
     return result;
+  }
+
+  /**
+   * 更新文章审核状态
+   * @param articleId 文章ID
+   * @param approvalStatus 审核状态：0-待审核，1-审核中，2-审核通过
+   * @param rejectReason 拒绝原因（可选）
+   * @returns
+   */
+  async updateArticleApprovalStatus(
+    articleId: number,
+    approvalStatus: number,
+    rejectReason?: string,
+  ) {
+    const updateData: any = { is_approved: approvalStatus };
+
+    // 如果有拒绝原因，则更新拒绝原因字段
+    if (approvalStatus !== 2 && rejectReason) {
+      updateData.reject_reason = rejectReason;
+    }
+
+    return this.articleRepository
+      .createQueryBuilder()
+      .update()
+      .set(updateData)
+      .where('id = :id', { id: articleId })
+      .execute();
   }
 }

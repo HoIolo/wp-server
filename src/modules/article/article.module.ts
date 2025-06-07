@@ -10,6 +10,7 @@ import { TagsModule } from '../tags/tags.module';
 import { ArticleType } from './entity/articleType.entity';
 import { ArticleTypeService } from './articleType.service';
 import { ArticleTypeController } from './articleType.controller';
+import { AIModule } from '../ai/ai.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ArticleTypeController } from './articleType.controller';
     forwardRef(() => UserModule),
     CacheModule,
     TagsModule,
+    AIModule,
   ],
   controllers: [ArticleTypeController, ArticleController],
   providers: [ArticleService, ArticleTypeService],

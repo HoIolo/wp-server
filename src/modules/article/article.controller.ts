@@ -31,6 +31,8 @@ import { TagsService } from '../tags/tags.service';
 import { GetArticleByTagIdDto } from './dto/getArticleByTagId.dto';
 import { GetArticleByUidDto } from './dto/getArticleByUid.dto';
 import { ArticleTypeService } from './articleType.service';
+import { AIService } from '../ai/ai.service';
+import { Logger } from '@nestjs/common';
 
 @ApiTags('article')
 @Controller()
@@ -40,12 +42,13 @@ export class ArticleController {
 
   constructor(
     private readonly articleService: ArticleService,
+    private readonly articleTypeService: ArticleTypeService,
     private readonly userService: UserService,
+    private readonly tagsService: TagsService,
     @Inject('REDIS_CLIENT')
     private readonly redis: Redis,
-    private readonly tagsService: TagsService,
-    private readonly articleTypeService: ArticleTypeService,
-  ) { }
+    private readonly aiService: AIService,
+  ) {}
 
   /**
    * 分页获取文章信息
@@ -75,7 +78,11 @@ export class ArticleController {
     if (articleCache && isEmpty(keyword)) {
       return JSON.parse(articleCache);
     }
+
+    // 获取文章列表时，只返回审核通过的文章（状态为2）
+    getArticleDto.is_approved = 2;
     const [rows, count] = await this.articleService.find(getArticleDto);
+
     // 关键词查询不缓存
     if (isEmpty(keyword))
       this.redis.setex(
@@ -111,7 +118,10 @@ export class ArticleController {
     if (timelineCache) {
       return JSON.parse(timelineCache);
     }
-    const [rows, count] = await this.articleService.findTimeLine(order);
+
+    // 只查询审核通过的文章
+    const [rows, count] = await this.articleService.findTimeLine(order, 2);
+
     this.redis.setex(
       cacheKey,
       this.cacheExpireTime,
@@ -136,12 +146,16 @@ export class ArticleController {
   ) {
     const { order } = getArticleByTagDto;
     const { skip, offset } = handlePage(getArticleByTagDto);
+
+    // 只查询审核通过的文章
     const [rows, count] = await this.articleService.findArticleByTagId(
       tagid,
       order,
       skip,
       +offset,
+      2, // 审核通过状态
     );
+
     return {
       rows,
       count,
@@ -161,12 +175,16 @@ export class ArticleController {
   ) {
     const { order } = getArticleByUid;
     const { skip, offset } = handlePage(getArticleByUid);
+
+    // 只查询审核通过的文章
     const [rows, count] = await this.articleService.findArticleByUserId(
       uid,
       order,
       skip,
       +offset,
+      2, // 审核通过状态
     );
+
     if (count < 1) {
       // 未查询到文章数据
       throw new HttpException(
@@ -195,6 +213,7 @@ export class ArticleController {
     if (articleCache) {
       return JSON.parse(articleCache);
     }
+
     const article = await this.articleService.findById(id);
     if (!article) {
       throw new HttpException(
@@ -205,15 +224,33 @@ export class ArticleController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    this.redis.setex(
-      cacheKey,
-      this.cacheExpireTime,
-      JSON.stringify({ row: article }),
-    );
 
-    return {
-      row: article,
-    };
+    // 检查文章审核状态
+    if (article.is_approved === 2) {
+      // 已审核通过
+      this.redis.setex(
+        cacheKey,
+        this.cacheExpireTime,
+        JSON.stringify({ row: article }),
+      );
+
+      return {
+        row: article,
+      };
+    } else if (article.is_approved === 1) {
+      // 审核中
+      return {
+        status: 1,
+        message: '文章正在审核中，请稍后查看',
+      };
+    } else {
+      // 未通过审核
+      return {
+        status: 0,
+        message: '文章未通过审核',
+        reason: article.reject_reason || '内容不符合社区规范',
+      };
+    }
   }
 
   /**
@@ -251,7 +288,7 @@ export class ArticleController {
     // 验证分类是否存在
     const articleType = await this.articleTypeService.findById(Number(type_id));
     if (!articleType) {
-      throw new HttpException(  
+      throw new HttpException(
         {
           message: CREATE_ARTICLE_RESPONSE.TYPEID_ERROR,
           code: code.INVALID_PARAMS,
@@ -278,9 +315,57 @@ export class ArticleController {
       const articleKeys = await this.redis.keys(articleKeysMatch);
       if (articleKeys && articleKeys.length > 0) this.redis.del(articleKeys);
 
+      // 异步调用AI审核
+      this.aiReviewArticle(
+        result.id,
+        createArticleDto.title,
+        createArticleDto.content,
+      );
+
       return {
         message: CREATE_ARTICLE_RESPONSE.SUCCESS,
       };
+    }
+  }
+
+  /**
+   * 异步调用AI审核文章
+   * @param articleId 文章ID
+   * @param title 文章标题
+   * @param content 文章内容
+   */
+  private async aiReviewArticle(
+    articleId: number,
+    title: string,
+    content: string,
+  ) {
+    try {
+      // 先将文章状态设置为"审核中"
+      await this.articleService.updateArticleApprovalStatus(
+        articleId,
+        1, // 审核中
+        null,
+      );
+
+      // 调用AI审核服务
+      const reviewResult = await this.aiService.reviewArticle(title, content);
+
+      // 根据AI审核结果更新文章状态
+      await this.articleService.updateArticleApprovalStatus(
+        articleId,
+        reviewResult.approved, // 0-待审核或2-审核通过
+        reviewResult.reason,
+      );
+    } catch (error) {
+      // 记录错误但不影响用户体验
+      Logger.error(`文章AI审核失败: ${error.message}`, 'ArticleController');
+
+      // 审核出错时，将状态恢复为待审核
+      await this.articleService.updateArticleApprovalStatus(
+        articleId,
+        0, // 待审核
+        '系统审核出错，请等待管理员手动审核',
+      );
     }
   }
 

@@ -48,6 +48,16 @@ export class Article extends BaseEntity {
   @Column({ type: 'simple-array' })
   tags: string[];
 
+  @Column({
+    type: 'int',
+    default: 0,
+    comment: '审核状态：0-待审核，1-审核中，2-审核通过',
+  })
+  is_approved: number;
+
+  @Column({ type: 'text', nullable: true })
+  reject_reason: string;
+
   @ManyToMany(() => Tags, (tags) => tags.byArticles)
   @JoinTable({
     name: 'article_tags',
