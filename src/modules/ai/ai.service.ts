@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { getArticleReviewPrompt } from './propmt';
+import {
+  ARTICLE_APPROVAL_STATUS,
+  REVIEW_MESSAGES,
+  AI_REVIEW_CONSTANTS,
+} from '../article/constant';
 
 @Injectable()
 export class AIService {
@@ -92,7 +97,7 @@ export class AIService {
           },
         ],
         stream: body.isStream || false,
-        max_tokens: body.max_tokens || 512,
+        max_tokens: body.max_tokens || AI_REVIEW_CONSTANTS.MAX_TOKENS,
         temperature: 0.6,
         top_p: 0.7,
         top_k: 50,
@@ -108,11 +113,13 @@ export class AIService {
   /**
    * 文章审核
    * @param title 文章标题
+   * @param description 文章描述
    * @param content 文章内容
    * @returns {Promise<{approved: number, reason?: string, category?: string, confidence?: number}>} 返回审核结果
    */
   async reviewArticle(
     title: string,
+    description: string,
     content: string,
   ): Promise<{
     approved: number;
@@ -121,8 +128,8 @@ export class AIService {
     confidence?: number;
   }> {
     try {
-      const model = 'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B';
-      const prompt = getArticleReviewPrompt(title, content);
+      const model = AI_REVIEW_CONSTANTS.DEFAULT_MODEL;
+      const prompt = getArticleReviewPrompt(title, description, content);
 
       const response = await this.sfConversation(model, {
         messages: [
@@ -132,7 +139,7 @@ export class AIService {
           },
         ],
         isStream: false,
-        max_tokens: 1024, // 增加token限制，确保AI有足够空间回复
+        max_tokens: AI_REVIEW_CONSTANTS.MAX_TOKENS,
       });
       const result = await response.json();
       let reviewResult;
@@ -159,29 +166,39 @@ export class AIService {
           // 构建审核结果，保留所有字段，并转换approved为数字状态
           reviewResult = {
             // 布尔值转换为数字状态：true -> 2(通过)，false -> 0(待审核)
-            approved: parsedResponse.approved ? 2 : 0,
+            approved: parsedResponse.approved
+              ? ARTICLE_APPROVAL_STATUS.APPROVED
+              : ARTICLE_APPROVAL_STATUS.PENDING,
             category: parsedResponse.category || '',
             reason: parsedResponse.approved
               ? parsedResponse.reason || ''
-              : `[${parsedResponse.category || '违规内容'}] ${
-                  parsedResponse.reason || '内容不符合社区规范'
+              : `[${
+                  parsedResponse.category || REVIEW_MESSAGES.DEFAULT_VIOLATION
+                }] ${
+                  parsedResponse.reason || REVIEW_MESSAGES.DEFAULT_REJECT_REASON
                 }`,
             confidence: parsedResponse.confidence || 0,
           };
         } else {
           // 如果无法正确获取结果，默认为待审核状态
-          reviewResult = { approved: 0 };
+          reviewResult = { approved: ARTICLE_APPROVAL_STATUS.PENDING };
         }
       } catch (error) {
         // 如果解析JSON失败，默认为待审核状态
-        reviewResult = { approved: 0 };
-        Logger.warn(`AI审核结果解析失败: ${error.message}`, 'AIService');
+        reviewResult = { approved: ARTICLE_APPROVAL_STATUS.PENDING };
+        Logger.warn(
+          `${AI_REVIEW_CONSTANTS.LOG_PARSE_ERROR}: ${error.message}`,
+          'AIService',
+        );
       }
       return reviewResult;
     } catch (error) {
       // 如果调用AI服务出错，默认为待审核状态
-      Logger.error(`AI审核服务调用失败: ${error.message}`, 'AIService');
-      return { approved: 0 };
+      Logger.error(
+        `${AI_REVIEW_CONSTANTS.LOG_API_ERROR}: ${error.message}`,
+        'AIService',
+      );
+      return { approved: ARTICLE_APPROVAL_STATUS.PENDING };
     }
   }
 }

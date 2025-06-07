@@ -1,10 +1,15 @@
 /**
  * 文章审核提示词
  * @param title 文章标题
+ * @param description 文章描述
  * @param content 文章内容
  * @returns 审核提示词
  */
-export const getArticleReviewPrompt = (title: string, content: string) => {
+export const getArticleReviewPrompt = (
+  title: string,
+  description: string,
+  content: string,
+) => {
   return `作为内容审核专家，请对以下文章进行全面审核，判断是否存在违规内容。
 【审核标准】
 1. 政治敏感：包含政治敏感人物、事件、言论，可能引发政治争议或挑战政治底线的内容
@@ -18,6 +23,7 @@ export const getArticleReviewPrompt = (title: string, content: string) => {
 
 【待审核文章】
 标题：${title}
+描述：${description}
 内容：${content}
 
 【审核要求】

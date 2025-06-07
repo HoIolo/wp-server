@@ -8,7 +8,10 @@ export class GetArticleByUidDto extends PageDTO {
   @IsIn(['ASC', 'DESC'])
   order: 'DESC' | 'ASC' = 'DESC';
 
-  @ApiProperty({ description: '审核状态：0-待审核，1-审核中，2-审核通过' })
+  @ApiProperty({
+    description: '审核状态：0-待审核，1-审核中，2-审核通过，-1-查询所有状态',
+    default: 2,
+  })
   @IsOptional()
   is_approved?: number;
 }

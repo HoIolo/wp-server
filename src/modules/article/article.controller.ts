@@ -23,6 +23,9 @@ import {
   DELETE_ARTICLE_RESPONSE,
   FIND_ARTICLE_BY_USER_ID_RESPONSE,
   FIND_ARTICLE_RESPONSE,
+  ARTICLE_APPROVAL_STATUS,
+  CACHE_CONSTANTS,
+  REVIEW_MESSAGES,
 } from './constant';
 import { UserService } from '../user/user.service';
 import { Redis } from 'ioredis';
@@ -38,7 +41,7 @@ import { Logger } from '@nestjs/common';
 @Controller()
 @Role(roles.VISITOR)
 export class ArticleController {
-  private readonly cacheExpireTime: number = 60 * 60 * 24;
+  private readonly cacheExpireTime: number = CACHE_CONSTANTS.EXPIRE_TIME;
 
   constructor(
     private readonly articleService: ArticleService,
@@ -72,7 +75,7 @@ export class ArticleController {
     }
 
     // 缓存文章数据
-    const cacheKey = `articles_${sorted}_${page}_${offset}`;
+    const cacheKey = `${CACHE_CONSTANTS.ARTICLE_DETAIL_PREFIX}list_${sorted}_${page}_${offset}`;
     const articleCache = await this.redis.get(cacheKey);
     // 如果缓存中存在且没有关键字查询，则直接返回缓存
     if (articleCache && isEmpty(keyword)) {
@@ -80,7 +83,7 @@ export class ArticleController {
     }
 
     // 获取文章列表时，只返回审核通过的文章（状态为2）
-    getArticleDto.is_approved = 2;
+    getArticleDto.is_approved = ARTICLE_APPROVAL_STATUS.APPROVED;
     const [rows, count] = await this.articleService.find(getArticleDto);
 
     // 关键词查询不缓存
@@ -113,14 +116,17 @@ export class ArticleController {
     }
 
     // 存在缓存直接返回
-    const cacheKey = `articles_timeline_${order}`;
+    const cacheKey = `${CACHE_CONSTANTS.ARTICLE_DETAIL_PREFIX}timeline_${order}`;
     const timelineCache = await this.redis.get(cacheKey);
     if (timelineCache) {
       return JSON.parse(timelineCache);
     }
 
     // 只查询审核通过的文章
-    const [rows, count] = await this.articleService.findTimeLine(order, 2);
+    const [rows, count] = await this.articleService.findTimeLine(
+      order,
+      ARTICLE_APPROVAL_STATUS.APPROVED,
+    );
 
     this.redis.setex(
       cacheKey,
@@ -153,7 +159,7 @@ export class ArticleController {
       order,
       skip,
       +offset,
-      2, // 审核通过状态
+      ARTICLE_APPROVAL_STATUS.APPROVED,
     );
 
     return {
@@ -164,8 +170,8 @@ export class ArticleController {
 
   /**
    * 根据用户id获取文章信息
-   * @param tagid
-   * @param order
+   * @param uid 用户ID
+   * @param getArticleByUid DTO包含分页参数和审核状态
    * @returns
    */
   @Get('/article/user/:uid')
@@ -173,16 +179,26 @@ export class ArticleController {
     @Param('uid', ParseIntPipe) uid: number,
     @Query() getArticleByUid: GetArticleByUidDto,
   ) {
-    const { order } = getArticleByUid;
+    const { order, is_approved } = getArticleByUid;
     const { skip, offset } = handlePage(getArticleByUid);
 
-    // 只查询审核通过的文章
+    // 确定查询的审核状态
+    // 如果未指定is_approved，默认查询审核通过的文章
+    // 如果指定is_approved为-1，则查询所有状态的文章
+    // 否则查询指定状态的文章
+    const approvalStatus =
+      is_approved === undefined
+        ? ARTICLE_APPROVAL_STATUS.APPROVED
+        : is_approved === ARTICLE_APPROVAL_STATUS.ALL
+        ? undefined
+        : is_approved;
+
     const [rows, count] = await this.articleService.findArticleByUserId(
       uid,
       order,
       skip,
       +offset,
-      2, // 审核通过状态
+      approvalStatus,
     );
 
     if (count < 1) {
@@ -208,7 +224,7 @@ export class ArticleController {
    */
   @Get('article/:id')
   async getArticleById(@Param('id', ParseIntPipe) id: number) {
-    const cacheKey = `article_${id}`;
+    const cacheKey = `${CACHE_CONSTANTS.ARTICLE_DETAIL_PREFIX}${id}`;
     const articleCache = await this.redis.get(cacheKey);
     if (articleCache) {
       return JSON.parse(articleCache);
@@ -226,7 +242,7 @@ export class ArticleController {
     }
 
     // 检查文章审核状态
-    if (article.is_approved === 2) {
+    if (article.is_approved === ARTICLE_APPROVAL_STATUS.APPROVED) {
       // 已审核通过
       this.redis.setex(
         cacheKey,
@@ -237,18 +253,18 @@ export class ArticleController {
       return {
         row: article,
       };
-    } else if (article.is_approved === 1) {
+    } else if (article.is_approved === ARTICLE_APPROVAL_STATUS.REVIEWING) {
       // 审核中
       return {
-        status: 1,
-        message: '文章正在审核中，请稍后查看',
+        status: ARTICLE_APPROVAL_STATUS.REVIEWING,
+        message: REVIEW_MESSAGES.REVIEWING,
       };
     } else {
       // 未通过审核
       return {
-        status: 0,
-        message: '文章未通过审核',
-        reason: article.reject_reason || '内容不符合社区规范',
+        status: ARTICLE_APPROVAL_STATUS.PENDING,
+        message: REVIEW_MESSAGES.REJECTED,
+        reason: article.reject_reason || REVIEW_MESSAGES.DEFAULT_REJECT_REASON,
       };
     }
   }
@@ -311,7 +327,7 @@ export class ArticleController {
       );
     } else {
       // 成功发布文章后，将文章的缓存删除
-      const articleKeysMatch = 'articles*';
+      const articleKeysMatch = CACHE_CONSTANTS.ARTICLE_LIST_PATTERN;
       const articleKeys = await this.redis.keys(articleKeysMatch);
       if (articleKeys && articleKeys.length > 0) this.redis.del(articleKeys);
 
@@ -319,6 +335,7 @@ export class ArticleController {
       this.aiReviewArticle(
         result.id,
         createArticleDto.title,
+        createArticleDto.description,
         createArticleDto.content,
       );
 
@@ -332,39 +349,65 @@ export class ArticleController {
    * 异步调用AI审核文章
    * @param articleId 文章ID
    * @param title 文章标题
+   * @param description 文章描述
    * @param content 文章内容
    */
   private async aiReviewArticle(
     articleId: number,
     title: string,
+    description: string,
     content: string,
   ) {
     try {
       // 先将文章状态设置为"审核中"
       await this.articleService.updateArticleApprovalStatus(
         articleId,
-        1, // 审核中
+        ARTICLE_APPROVAL_STATUS.REVIEWING,
         null,
       );
 
       // 调用AI审核服务
-      const reviewResult = await this.aiService.reviewArticle(title, content);
+      const reviewResult = await this.aiService.reviewArticle(
+        title,
+        description,
+        content,
+      );
+
+      const successCallback = async () => {
+        // 如果审核通过，清除相关缓存，确保最新数据可见
+        if (reviewResult.approved === ARTICLE_APPROVAL_STATUS.APPROVED) {
+          // 清除文章列表相关缓存
+          const articleKeysMatch = CACHE_CONSTANTS.ARTICLE_LIST_PATTERN;
+          const articleKeys = await this.redis.keys(articleKeysMatch);
+          if (articleKeys && articleKeys.length > 0) {
+            await this.redis.del(articleKeys);
+            Logger.log(
+              REVIEW_MESSAGES.APPROVED_CACHE_CLEARED,
+              'ArticleController',
+            );
+          }
+        }
+      };
 
       // 根据AI审核结果更新文章状态
       await this.articleService.updateArticleApprovalStatus(
         articleId,
-        reviewResult.approved, // 0-待审核或2-审核通过
+        reviewResult.approved,
         reviewResult.reason,
+        successCallback,
       );
     } catch (error) {
       // 记录错误但不影响用户体验
-      Logger.error(`文章AI审核失败: ${error.message}`, 'ArticleController');
+      Logger.error(
+        `${REVIEW_MESSAGES.REVIEW_FAILED}: ${error.message}`,
+        'ArticleController',
+      );
 
       // 审核出错时，将状态恢复为待审核
       await this.articleService.updateArticleApprovalStatus(
         articleId,
-        0, // 待审核
-        '系统审核出错，请等待管理员手动审核',
+        ARTICLE_APPROVAL_STATUS.PENDING,
+        REVIEW_MESSAGES.SYSTEM_ERROR,
       );
     }
   }
@@ -388,7 +431,7 @@ export class ArticleController {
       );
     }
     // 成功删除文章后，将文章的缓存删除
-    const articleKeysMatch = 'articles*';
+    const articleKeysMatch = CACHE_CONSTANTS.ARTICLE_LIST_PATTERN;
     const articleKeys = await this.redis.keys(articleKeysMatch);
     if (articleKeys && articleKeys.length > 0) this.redis.del(articleKeys);
 

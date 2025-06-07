@@ -61,3 +61,37 @@ export const ADD_ARTICLE_ERROR = {
 export const ADD_ARTICLE_TYPE_ERROR = {
   ARTICLE_TYPE_ALREADY_EXIST: '文章类型已存在！',
 };
+
+// 文章审核状态常量
+export const ARTICLE_APPROVAL_STATUS = {
+  PENDING: 0, // 待审核
+  REVIEWING: 1, // 审核中
+  APPROVED: 2, // 审核通过
+  ALL: -1, // 查询所有状态
+};
+
+// 缓存相关常量
+export const CACHE_CONSTANTS = {
+  ARTICLE_LIST_PATTERN: 'articles*', // 文章列表缓存匹配模式
+  ARTICLE_DETAIL_PREFIX: 'article_', // 文章详情缓存前缀
+  EXPIRE_TIME: 60 * 60 * 24, // 缓存过期时间，24小时
+};
+
+// 审核相关消息
+export const REVIEW_MESSAGES = {
+  APPROVED_CACHE_CLEARED: 'AI审核通过，已清除文章列表缓存',
+  REVIEW_FAILED: '文章AI审核失败',
+  SYSTEM_ERROR: '系统审核出错，请等待管理员手动审核',
+  REVIEWING: '文章正在审核中，请稍后查看',
+  REJECTED: '文章未通过审核',
+  DEFAULT_REJECT_REASON: '内容不符合社区规范',
+  DEFAULT_VIOLATION: '违规内容',
+};
+
+// AI审核相关常量
+export const AI_REVIEW_CONSTANTS = {
+  DEFAULT_MODEL: 'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B',
+  MAX_TOKENS: 1024,
+  LOG_PARSE_ERROR: 'AI审核结果解析失败',
+  LOG_API_ERROR: 'AI审核服务调用失败',
+};

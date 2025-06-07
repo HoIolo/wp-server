@@ -218,9 +218,18 @@ export class UserService {
    */
   incrementArticleNum(id: number | string, queryRunner?: QueryRunner) {
     if (queryRunner) {
-      return queryRunner.manager.increment(Profile, { user: {id: +id} }, 'article_num', 1);
+      return queryRunner.manager.increment(
+        Profile,
+        { user: { id: +id } },
+        'article_num',
+        1,
+      );
     }
-    return this.profilesRepository.increment({ user: {id: +id} }, 'article_num', 1);
+    return this.profilesRepository.increment(
+      { user: { id: +id } },
+      'article_num',
+      1,
+    );
   }
 
   /**

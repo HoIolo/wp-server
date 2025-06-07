@@ -10,7 +10,7 @@ import { CreateArticleDTO } from './dto/createArticle.dto';
 import * as dayjs from 'dayjs';
 import { User } from '../user/entity/user.entity';
 import { Tags } from '../tags/entity/tags.entity';
-import { ADD_ARTICLE_ERROR } from './constant';
+import { ADD_ARTICLE_ERROR, ARTICLE_APPROVAL_STATUS } from './constant';
 import { ArticleType } from './entity/articleType.entity';
 
 @Injectable()
@@ -174,7 +174,7 @@ export class ArticleService {
     tagsList: Tags[],
     articleType: ArticleType,
   ) {
-    const { author_id, tags } = createArticleDto;
+    const { author_id } = createArticleDto;
     const article = new Article();
     const user = new User();
     user.id = author_id as number;
@@ -189,25 +189,9 @@ export class ArticleService {
     await queryRunner.startTransaction('READ COMMITTED');
 
     try {
-      const saveArticle = queryRunner.manager.save(mergeArticle);
+      const saveArticle = await queryRunner.manager.save(mergeArticle);
       if (!saveArticle) {
         throw ADD_ARTICLE_ERROR.ARTICE_SAVE_ERROR;
-      }
-      // 标签数 + 1
-      const updateTagsResult = await this.tagsService.incrementTagsByNum(
-        tags,
-        queryRunner,
-      );
-      if (updateTagsResult.affected < 1) {
-        throw ADD_ARTICLE_ERROR.TAG_SAVE_ERROR;
-      }
-      // 用户数 + 1
-      const updateArticleResult = await this.userService.incrementArticleNum(
-        author_id,
-        queryRunner,
-      );
-      if (updateArticleResult.affected < 1) {
-        throw ADD_ARTICLE_ERROR.USER_ARTICLE_NUM_ERROR;
       }
 
       await queryRunner.commitTransaction();
@@ -312,25 +296,109 @@ export class ArticleService {
    * @param articleId 文章ID
    * @param approvalStatus 审核状态：0-待审核，1-审核中，2-审核通过
    * @param rejectReason 拒绝原因（可选）
+   * @param onSuccess 状态更新成功后的回调函数（可选）
    * @returns
    */
   async updateArticleApprovalStatus(
     articleId: number,
     approvalStatus: number,
     rejectReason?: string,
+    onSuccess?: (result: any) => Promise<void>,
   ) {
     const updateData: any = { is_approved: approvalStatus };
 
     // 如果有拒绝原因，则更新拒绝原因字段
-    if (approvalStatus !== 2 && rejectReason) {
+    if (approvalStatus !== ARTICLE_APPROVAL_STATUS.APPROVED && rejectReason) {
       updateData.reject_reason = rejectReason;
     }
 
-    return this.articleRepository
+    const result = await this.articleRepository
       .createQueryBuilder()
       .update()
       .set(updateData)
       .where('id = :id', { id: articleId })
       .execute();
+
+    // 如果更新成功且状态为"审核通过"，则增加标签引用数和用户文章数
+    if (
+      result.affected > 0 &&
+      approvalStatus === ARTICLE_APPROVAL_STATUS.APPROVED
+    ) {
+      await this.incrementCountsAfterApproval(articleId);
+    }
+
+    // 如果更新成功且提供了回调函数，则执行回调
+    if (result.affected > 0 && onSuccess) {
+      await onSuccess(result);
+    }
+
+    return result;
+  }
+
+  /**
+   * 在文章审核通过后增加相关计数
+   * @param articleId 文章ID
+   */
+  private async incrementCountsAfterApproval(articleId: number) {
+    try {
+      // 查询文章详情，获取作者ID和标签
+      const article = await this.articleRepository
+        .createQueryBuilder('article')
+        .leftJoinAndSelect('article.author', 'author')
+        .leftJoinAndSelect('article.tagsEntity', 'tags')
+        .where('article.id = :id', { id: articleId })
+        .getOne();
+
+      if (!article) {
+        Logger.error(
+          `文章不存在，无法增加计数: ${articleId}`,
+          'ArticleService',
+        );
+        return;
+      }
+
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction('READ COMMITTED');
+
+      try {
+        // 直接获取文章中保存的标签字符串数组
+        const tagNames = article.tags;
+
+        // 标签数 + 1
+        const updateTagsResult = await this.tagsService.incrementTagsByNum(
+          tagNames,
+          queryRunner,
+        );
+        if (updateTagsResult.affected < 1) {
+          throw ADD_ARTICLE_ERROR.TAG_SAVE_ERROR;
+        }
+
+        // 用户数 + 1
+        const updateArticleResult = await this.userService.incrementArticleNum(
+          article.author.id,
+          queryRunner,
+        );
+        if (updateArticleResult.affected < 1) {
+          throw ADD_ARTICLE_ERROR.USER_ARTICLE_NUM_ERROR;
+        }
+
+        await queryRunner.commitTransaction();
+        Logger.log(
+          `文章审核通过，已增加标签引用数和用户文章数: ${articleId}`,
+          'ArticleService',
+        );
+      } catch (e) {
+        await queryRunner.rollbackTransaction();
+        Logger.error(`增加计数失败: ${e.message}`, 'ArticleService');
+      } finally {
+        queryRunner.release();
+      }
+    } catch (error) {
+      Logger.error(
+        `处理审核通过后的计数增加失败: ${error.message}`,
+        'ArticleService',
+      );
+    }
   }
 }
