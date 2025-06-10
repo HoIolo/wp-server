@@ -68,18 +68,20 @@ export class ArticleService {
    * @param article_id
    * @returns
    */
-  async findById(article_id: number) {
+  async findById(article_id: number, isEdit?: 0 | 1) {
     const article = await this.articleRepository.findOneBy({ id: article_id });
     if (!article) {
       return null;
     }
-    // 文章浏览量 + 1
-    await this.articleRepository
-      .createQueryBuilder()
-      .update()
-      .set({ watch_num: article.watch_num + 1 })
-      .where('id = :id', { id: article_id })
-      .execute();
+    if (isEdit === 0) {
+      // 文章浏览量 + 1
+      await this.articleRepository
+        .createQueryBuilder()
+        .update()
+        .set({ watch_num: article.watch_num + 1 })
+        .where('id = :id', { id: article_id })
+        .execute();
+    }
     return this.articleRepository
       .createQueryBuilder('article')
       .leftJoin('article.author', 'author')
@@ -399,6 +401,59 @@ export class ArticleService {
         `处理审核通过后的计数增加失败: ${error.message}`,
         'ArticleService',
       );
+    }
+  }
+
+  /**
+   * 更新文章
+   * @param id 文章ID
+   * @param updateArticleDto 更新数据
+   * @param tags 标签列表
+   * @param articleType 文章类型
+   * @param approvalStatus 审核状态
+   * @returns
+   */
+  async updateArticle(
+    id: number,
+    updateArticleDto: any,
+    tags: Array<any>,
+    articleType: any,
+    approvalStatus: number,
+  ) {
+    try {
+      const article = await this.articleRepository.findOne({
+        where: { id },
+        relations: ['type'],
+      });
+
+      if (!article) {
+        return null;
+      }
+
+      // 更新基本字段
+      if (updateArticleDto.title) article.title = updateArticleDto.title;
+      if (updateArticleDto.content) article.content = updateArticleDto.content;
+      if (updateArticleDto.description)
+        article.description = updateArticleDto.description;
+
+      // 更新文章类型
+      if (articleType) {
+        article.type = articleType;
+      }
+
+      // 更新标签
+      if (tags && tags.length > 0) {
+        article.tags = tags;
+      }
+
+      // 更新审核状态
+      article.is_approved = approvalStatus;
+
+      // 保存更新
+      return await this.articleRepository.save(article);
+    } catch (error) {
+      console.error('更新文章失败:', error);
+      return null;
     }
   }
 }

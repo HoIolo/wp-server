@@ -20,6 +20,16 @@ export const CREATE_ARTICLE_RESPONSE = {
   TYPEID_ERROR: '参数错误，不存在这个分类！',
 };
 
+// 更新文章响应提示
+export const UPDATE_ARTICLE_RESPONSE = {
+  SUCCESS: '更新成功！',
+  FAIL: '更新失败，系统繁忙，请稍后再试！',
+  PARAMS_ERROR: '参数错误，请重新提交！',
+  TAGS_ERROR: '参数错误，不存在某个或者全部标签！',
+  TYPEID_ERROR: '参数错误，不存在这个分类！',
+  ARTICLE_NOT_FOUND: '文章不存在！',
+};
+
 // 根据标签id查询文章响应
 export const FIND_ARTICLE_BY_TAG_ID_RESPONSE = {
   SUCCESS: '查询成功！',
@@ -67,6 +77,7 @@ export const ARTICLE_APPROVAL_STATUS = {
   PENDING: 0, // 待审核
   REVIEWING: 1, // 审核中
   APPROVED: 2, // 审核通过
+  REJECTED: 3, // 审核不通过
   ALL: -1, // 查询所有状态
 };
 
@@ -86,6 +97,7 @@ export const REVIEW_MESSAGES = {
   REJECTED: '文章未通过审核',
   DEFAULT_REJECT_REASON: '内容不符合社区规范',
   DEFAULT_VIOLATION: '违规内容',
+  PENDING: '文章待审核',
 };
 
 // AI审核相关常量

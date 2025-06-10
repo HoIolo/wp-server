@@ -165,10 +165,10 @@ export class AIService {
 
           // 构建审核结果，保留所有字段，并转换approved为数字状态
           reviewResult = {
-            // 布尔值转换为数字状态：true -> 2(通过)，false -> 0(待审核)
+            // 布尔值转换为数字状态：true -> 2(通过)，false -> 3(不通过)
             approved: parsedResponse.approved
               ? ARTICLE_APPROVAL_STATUS.APPROVED
-              : ARTICLE_APPROVAL_STATUS.PENDING,
+              : ARTICLE_APPROVAL_STATUS.REJECTED,
             category: parsedResponse.category || '',
             reason: parsedResponse.approved
               ? parsedResponse.reason || ''

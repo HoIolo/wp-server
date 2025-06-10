@@ -9,16 +9,21 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/common/decorator/role.decorator';
-import { code, roles } from 'src/constant';
+import { code, roles, GUARD_RESPONSE } from 'src/constant';
 import { ArticleService } from './article.service';
 import { GetArticleDTO } from './dto/getArticles.dto';
 import { CreateArticleDTO } from './dto/createArticle.dto';
+import { UpdateArticleDTO } from './dto/updateArticle.dto';
 import {
   CREATE_ARTICLE_RESPONSE,
+  UPDATE_ARTICLE_RESPONSE,
   DEFAULT_RESOPNSE,
   DELETE_ARTICLE_RESPONSE,
   FIND_ARTICLE_BY_USER_ID_RESPONSE,
@@ -36,6 +41,10 @@ import { GetArticleByUidDto } from './dto/getArticleByUid.dto';
 import { ArticleTypeService } from './articleType.service';
 import { AIService } from '../ai/ai.service';
 import { Logger } from '@nestjs/common';
+import { GetArticleByIdDto } from './dto/getArticleById.dto';
+import { Profile } from '../user/entity/profile.entity';
+import { Request } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('article')
 @Controller()
@@ -189,9 +198,9 @@ export class ArticleController {
     const approvalStatus =
       is_approved === undefined
         ? ARTICLE_APPROVAL_STATUS.APPROVED
-        : is_approved === ARTICLE_APPROVAL_STATUS.ALL
+        : Number(is_approved) === ARTICLE_APPROVAL_STATUS.ALL
         ? undefined
-        : is_approved;
+        : Number(is_approved);
 
     const [rows, count] = await this.articleService.findArticleByUserId(
       uid,
@@ -223,14 +232,18 @@ export class ArticleController {
    * @returns
    */
   @Get('article/:id')
-  async getArticleById(@Param('id', ParseIntPipe) id: number) {
+  async getArticleById(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() getArticleById: GetArticleByIdDto,
+  ) {
+    const { isEdit } = getArticleById;
     const cacheKey = `${CACHE_CONSTANTS.ARTICLE_DETAIL_PREFIX}${id}`;
     const articleCache = await this.redis.get(cacheKey);
     if (articleCache) {
       return JSON.parse(articleCache);
     }
 
-    const article = await this.articleService.findById(id);
+    const article = await this.articleService.findById(id, isEdit);
     if (!article) {
       throw new HttpException(
         {
@@ -241,32 +254,47 @@ export class ArticleController {
       );
     }
 
-    // 检查文章审核状态
-    if (article.is_approved === ARTICLE_APPROVAL_STATUS.APPROVED) {
-      // 已审核通过
-      this.redis.setex(
-        cacheKey,
-        this.cacheExpireTime,
-        JSON.stringify({ row: article }),
-      );
-
-      return {
-        row: article,
-      };
-    } else if (article.is_approved === ARTICLE_APPROVAL_STATUS.REVIEWING) {
-      // 审核中
-      return {
-        status: ARTICLE_APPROVAL_STATUS.REVIEWING,
-        message: REVIEW_MESSAGES.REVIEWING,
-      };
-    } else {
-      // 未通过审核
-      return {
-        status: ARTICLE_APPROVAL_STATUS.PENDING,
-        message: REVIEW_MESSAGES.REJECTED,
-        reason: article.reject_reason || REVIEW_MESSAGES.DEFAULT_REJECT_REASON,
-      };
+    // 如果是编辑模式，直接返回文章信息，不判断审核状态
+    if (Number(isEdit) === 1) {
+      return { row: article };
     }
+
+    // 使用状态映射处理不同审核状态的返回
+    const statusHandlers = {
+      [ARTICLE_APPROVAL_STATUS.APPROVED]: () => {
+        this.redis.setex(
+          cacheKey,
+          this.cacheExpireTime,
+          JSON.stringify({ row: article }),
+        );
+        return { row: article };
+      },
+      [ARTICLE_APPROVAL_STATUS.REVIEWING]: () => ({
+        row: {
+          status: ARTICLE_APPROVAL_STATUS.REVIEWING,
+          message: REVIEW_MESSAGES.REVIEWING,
+        },
+      }),
+      [ARTICLE_APPROVAL_STATUS.REJECTED]: () => ({
+        row: {
+          status: ARTICLE_APPROVAL_STATUS.REJECTED,
+          message: REVIEW_MESSAGES.REJECTED,
+          reason:
+            article.reject_reason || REVIEW_MESSAGES.DEFAULT_REJECT_REASON,
+        },
+      }),
+      [ARTICLE_APPROVAL_STATUS.PENDING]: () => ({
+        row: {
+          status: ARTICLE_APPROVAL_STATUS.PENDING,
+          message: REVIEW_MESSAGES.PENDING,
+        },
+      }),
+    };
+
+    const handler =
+      statusHandlers[article.is_approved] ||
+      statusHandlers[ARTICLE_APPROVAL_STATUS.PENDING];
+    return handler();
   }
 
   /**
@@ -343,6 +371,120 @@ export class ArticleController {
         message: CREATE_ARTICLE_RESPONSE.SUCCESS,
       };
     }
+  }
+
+  /**
+   * 更新文章（需要登陆）
+   * @param id 文章ID
+   * @param updateArticleDto 更新信息
+   * @returns
+   */
+  @Put('article/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @Role(roles.LOGGED)
+  async updateArticle(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateArticleDto: UpdateArticleDTO,
+    @Req() req: Request,
+  ) {
+    // 查找文章
+    const article = await this.articleService.findById(id);
+    if (!article) {
+      throw new HttpException(
+        {
+          message: UPDATE_ARTICLE_RESPONSE.ARTICLE_NOT_FOUND,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const user = req.user as Profile;
+    // 验证当前用户是否是文章作者
+    const currentUserId = user.id;
+    if (!currentUserId || article.author.id !== currentUserId) {
+      throw new HttpException(
+        {
+          message: GUARD_RESPONSE.NOT_PERMISSION,
+          code: code.INVALID_PARAMS,
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    // 验证标签是否存在（如果提供了标签）
+    let tagsList = [];
+    if (updateArticleDto.tags && updateArticleDto.tags.length > 0) {
+      const tagsObjectList = await this.tagsService.findByTagNameArray(
+        updateArticleDto.tags,
+      );
+      tagsList = tagsObjectList.map((tag) => tag.tagName);
+
+      if (tagsList.length !== updateArticleDto.tags.length) {
+        throw new HttpException(
+          {
+            message: UPDATE_ARTICLE_RESPONSE.TAGS_ERROR,
+            code: code.INVALID_PARAMS,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    // 验证分类是否存在（如果提供了分类）
+    let articleType = null;
+    if (updateArticleDto.type_id) {
+      articleType = await this.articleTypeService.findById(
+        Number(updateArticleDto.type_id),
+      );
+      if (!articleType) {
+        throw new HttpException(
+          {
+            message: UPDATE_ARTICLE_RESPONSE.TYPEID_ERROR,
+            code: code.INVALID_PARAMS,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    // 更新文章，状态改为审核中
+    const updatedArticle = await this.articleService.updateArticle(
+      id,
+      updateArticleDto,
+      tagsList,
+      articleType,
+      ARTICLE_APPROVAL_STATUS.REVIEWING,
+    );
+    if (!updatedArticle) {
+      throw new HttpException(
+        {
+          message: UPDATE_ARTICLE_RESPONSE.FAIL,
+          code: code.SYSTEM_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    // 清除文章缓存
+    const articleDetailCacheKey = `${CACHE_CONSTANTS.ARTICLE_DETAIL_PREFIX}${id}`;
+    await this.redis.del(articleDetailCacheKey);
+
+    // 清除文章列表缓存
+    const articleKeysMatch = CACHE_CONSTANTS.ARTICLE_LIST_PATTERN;
+    const articleKeys = await this.redis.keys(articleKeysMatch);
+    if (articleKeys && articleKeys.length > 0) this.redis.del(articleKeys);
+
+    // 异步调用AI审核
+    this.aiReviewArticle(
+      id,
+      updateArticleDto.title || article.title,
+      updateArticleDto.description || article.description,
+      updateArticleDto.content || article.content,
+    );
+
+    return {
+      message: UPDATE_ARTICLE_RESPONSE.SUCCESS,
+    };
   }
 
   /**

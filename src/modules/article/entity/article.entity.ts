@@ -51,7 +51,7 @@ export class Article extends BaseEntity {
   @Column({
     type: 'int',
     default: 0,
-    comment: '审核状态：0-待审核，1-审核中，2-审核通过',
+    comment: '审核状态：0-待审核，1-审核中，2-审核通过，3-审核不通过',
   })
   is_approved: number;
 
